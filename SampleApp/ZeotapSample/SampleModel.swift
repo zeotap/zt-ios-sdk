@@ -1,4 +1,5 @@
 import Foundation
+import os
 import ZeotapSDK
 import ZeotapSDKAdSupport
 
@@ -11,8 +12,17 @@ final class SampleModel: ObservableObject, SdkListener {
     let stub = IngestStubServer()
     private var refreshTimer: Timer?
 
+    /// The on-screen log, mirrored to the unified log so a device run's harness
+    /// (e2e/helpers/mobile/maestro.ts `appLog`) can show why a flow failed — the
+    /// screen is gone by the time anyone reads the report.
+    private static let logger = Logger(subsystem: "com.zeotap.sample", category: "sample")
+
     init() {
         let config = SampleConfig.shared
+        // Which launch arguments arrived, by NAME: a flow that configures the app
+        // through them otherwise fails as a bare "not loaded" with no cause.
+        let keys = ProcessInfo.processInfo.arguments.dropFirst().filter { $0.hasPrefix("-") }
+        append("launch arguments: \(keys.isEmpty ? "none" : keys.joined(separator: " "))")
         if config.launchArg("resetState") == "1" {
             SampleConfig.resetPersistedState()
             append("state reset (fresh install)")
@@ -28,6 +38,7 @@ final class SampleModel: ObservableObject, SdkListener {
 
     func append(_ line: String) {
         let stamp = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
+        Self.logger.notice("\(line, privacy: .public)")
         DispatchQueue.main.async {
             self.log.insert("\(stamp)  \(line)", at: 0)
             if self.log.count > 200 { self.log.removeLast() }
