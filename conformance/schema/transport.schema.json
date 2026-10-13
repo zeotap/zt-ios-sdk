@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/transport.schema.json",
+  "title": "transport conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "transport"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "apiHost",
+              "writeKey",
+              "nativeAppId",
+              "eventCount",
+              "responses"
+            ],
+            "properties": {
+              "apiHost": {
+                "type": "string"
+              },
+              "writeKey": {
+                "type": "string"
+              },
+              "nativeAppId": {
+                "type": "string"
+              },
+              "eventCount": {
+                "type": "integer"
+              },
+              "responses": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "const": "network"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "attempts",
+              "delaysMs",
+              "outcome"
+            ],
+            "properties": {
+              "attempts": {
+                "type": "integer"
+              },
+              "delaysMs": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "outcome": {
+                "enum": [
+                  "succeeded",
+                  "threw",
+                  "exhausted"
+                ]
+              },
+              "errorMessagePrefix": {
+                "type": "string"
+              },
+              "request": {
+                "type": "object",
+                "required": [
+                  "url",
+                  "method",
+                  "headers"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "method": {
+                    "const": "POST"
+                  },
+                  "headers": {
+                    "type": "object"
+                  }
+                }
+              },
+              "envelope": {
+                "type": "object",
+                "required": [
+                  "keys",
+                  "batchLength",
+                  "sentAt"
+                ]
+              },
+              "sameBodyOnRetry": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

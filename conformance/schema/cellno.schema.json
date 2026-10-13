@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/cellno.schema.json",
+  "title": "cellno conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "cellno"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "raw"
+            ],
+            "properties": {
+              "raw": {
+                "type": "string"
+              },
+              "explicitCc": {
+                "type": "string"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "number"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "number": {
+                "type": "string",
+                "pattern": "^[0-9]*$"
+              },
+              "cc": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

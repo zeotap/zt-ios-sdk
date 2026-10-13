@@ -1,0 +1,252 @@
+{
+  "family": "consent-signals",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/consent-state.ts",
+    "sdk/js/src/consent-state.test.ts",
+    "sdk/js/src/cookie-sync.ts"
+  ],
+  "sourceHash": "sha256:e4307cbc88adc8a6cda1014d1b94a7bd4f7f581ff925cf6d734c8fc86064701c",
+  "generatedBy": "sdk/js/scripts/conformance/consent-signals.gen.ts",
+  "notes": [
+    "input is a ConsentInput ({tcfString} | {usPrivacy} | parsed booleans) except the two `uniform` cases, which pin uniformSignals(granted).",
+    "Signal key order track, identify, cookieSync is contractual for the persisted record."
+  ],
+  "cases": [
+    {
+      "id": "parsed/all-true",
+      "input": {
+        "analytics": true,
+        "marketing": true,
+        "advertising": true,
+        "functional": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "parsed/all-false",
+      "input": {
+        "analytics": false,
+        "marketing": false,
+        "advertising": false,
+        "functional": false
+      },
+      "expected": {
+        "track": false,
+        "identify": false,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "parsed/empty",
+      "description": "absent analytics GRANTS track/identify; no ad/marketing → no cookieSync",
+      "input": {},
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "parsed/advertising-only",
+      "description": "legacy hosts send only advertising — tracking must not silently stop",
+      "input": {
+        "advertising": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "parsed/marketing-only",
+      "input": {
+        "marketing": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "parsed/functional-only",
+      "input": {
+        "functional": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "parsed/analytics-false-ads-true",
+      "description": "identify follows track; cookieSync independent",
+      "input": {
+        "analytics": false,
+        "advertising": true
+      },
+      "expected": {
+        "track": false,
+        "identify": false,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "parsed/analytics-true-only",
+      "input": {
+        "analytics": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "tcf/non-empty",
+      "description": "manual TC string grants all; enforcement is server-side",
+      "input": {
+        "tcfString": "CQAbcdefghijklmnopqrstuvwxyz"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "tcf/empty",
+      "description": "empty string still grants track/identify but denies cookieSync",
+      "input": {
+        "tcfString": ""
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "usp/1YNN",
+      "description": "not opted out of sale",
+      "input": {
+        "usPrivacy": "1YNN"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "usp/1YYN",
+      "description": "opted out of sale → no cookieSync; track/identify unaffected (CCPA is opt-out-of-sale)",
+      "input": {
+        "usPrivacy": "1YYN"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "usp/1---",
+      "input": {
+        "usPrivacy": "1---"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "usp/1yyn-lowercase",
+      "description": "third char compared case-insensitively",
+      "input": {
+        "usPrivacy": "1yyn"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "usp/empty",
+      "description": "malformed fails safe for cookieSync",
+      "input": {
+        "usPrivacy": ""
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "usp/too-short-1Y",
+      "input": {
+        "usPrivacy": "1Y"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": false
+      }
+    },
+    {
+      "id": "usp/three-chars-1YN",
+      "description": "3 chars is accepted client-side (forwarder requires exactly 4)",
+      "input": {
+        "usPrivacy": "1YN"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "usp/five-chars-1YNNN",
+      "input": {
+        "usPrivacy": "1YNNN"
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "uniform/granted",
+      "input": {
+        "uniform": true
+      },
+      "expected": {
+        "track": true,
+        "identify": true,
+        "cookieSync": true
+      }
+    },
+    {
+      "id": "uniform/denied",
+      "input": {
+        "uniform": false
+      },
+      "expected": {
+        "track": false,
+        "identify": false,
+        "cookieSync": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "family": "cellno",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/hash.ts",
+    "sdk/js/src/hash.test.ts"
+  ],
+  "sourceHash": "sha256:eaf29f88c8c36b13573aab07364bc3e9731b399277a6e12aeccf73c79d4d9507",
+  "generatedBy": "sdk/js/scripts/conformance/cellno.gen.ts",
+  "notes": [
+    "expected.cc is ABSENT (not null/empty) when no country code was recognised.",
+    "\\d means ASCII 0-9 only; trim() is the ECMAScript whitespace set."
+  ],
+  "cases": [
+    {
+      "id": "plain-national",
+      "input": {
+        "raw": "9999999999"
+      },
+      "expected": {
+        "number": "9999999999"
+      }
+    },
+    {
+      "id": "formatted-strip",
+      "description": "'(999)' is formatting, not a cc — no space-prefix split",
+      "input": {
+        "raw": "(999) 999-9999"
+      },
+      "expected": {
+        "number": "9999999999"
+      }
+    },
+    {
+      "id": "space-cc",
+      "description": "legacy '<cc> <number>' convention",
+      "input": {
+        "raw": "91 9999999999"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "space-cc-plus",
+      "input": {
+        "raw": "+91 9999999999"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "space-cc-plus-formatted",
+      "input": {
+        "raw": "+91 (99999) 99999"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "explicit-cc-wins",
+      "description": "explicit cc beats the inline prefix",
+      "input": {
+        "raw": "91 9999999999",
+        "explicitCc": "1"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "1"
+      }
+    },
+    {
+      "id": "explicit-cc-only",
+      "input": {
+        "raw": "9999999999",
+        "explicitCc": "91"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "explicit-cc-formatted",
+      "description": "explicit cc is digit-stripped",
+      "input": {
+        "raw": "9999999999",
+        "explicitCc": "+91"
+      },
+      "expected": {
+        "number": "9999999999",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "explicit-cc-empty",
+      "description": "empty explicit cc → no cc",
+      "input": {
+        "raw": "9999999999",
+        "explicitCc": ""
+      },
+      "expected": {
+        "number": "9999999999"
+      }
+    },
+    {
+      "id": "explicit-cc-non-digits",
+      "description": "cc with no digits → no cc",
+      "input": {
+        "raw": "9999999999",
+        "explicitCc": "+-"
+      },
+      "expected": {
+        "number": "9999999999"
+      }
+    },
+    {
+      "id": "double-space",
+      "description": "trim first; second token boundary is the first space",
+      "input": {
+        "raw": " 44  7700 900123"
+      },
+      "expected": {
+        "number": "7700900123",
+        "cc": "44"
+      }
+    },
+    {
+      "id": "cc-4-digits",
+      "input": {
+        "raw": "+1234 5"
+      },
+      "expected": {
+        "number": "5",
+        "cc": "1234"
+      }
+    },
+    {
+      "id": "cc-5-digits-not-cc",
+      "description": "5 digits fail ^\\+?\\d{1,4}$ → whole string is the number",
+      "input": {
+        "raw": "+12345 6"
+      },
+      "expected": {
+        "number": "123456"
+      }
+    },
+    {
+      "id": "no-space-hyphen",
+      "description": "no space → no cc; '+' and '-' stripped",
+      "input": {
+        "raw": "+91-9999999999"
+      },
+      "expected": {
+        "number": "919999999999"
+      }
+    },
+    {
+      "id": "letters",
+      "description": "no digits → empty number",
+      "input": {
+        "raw": "abc"
+      },
+      "expected": {
+        "number": ""
+      }
+    },
+    {
+      "id": "empty",
+      "input": {
+        "raw": ""
+      },
+      "expected": {
+        "number": ""
+      }
+    },
+    {
+      "id": "spaces-only",
+      "input": {
+        "raw": "   "
+      },
+      "expected": {
+        "number": ""
+      }
+    },
+    {
+      "id": "leading-space-then-cc",
+      "description": "trim makes the cc token first",
+      "input": {
+        "raw": " 91 9"
+      },
+      "expected": {
+        "number": "9",
+        "cc": "91"
+      }
+    },
+    {
+      "id": "unicode-digits",
+      "description": "Arabic-Indic digits are NOT \\d in JS regexes without the u flag",
+      "input": {
+        "raw": "٩٩٩ 123"
+      },
+      "expected": {
+        "number": "123"
+      }
+    }
+  ]
+}

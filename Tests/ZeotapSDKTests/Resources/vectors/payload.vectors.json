@@ -1,0 +1,1857 @@
+{
+  "family": "payload",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/client.ts",
+    "sdk/js/src/utils.ts",
+    "sdk/js/src/client.test.ts"
+  ],
+  "sourceHash": "sha256:26fdfb39a50a9c482b499edf90c1b508c1042f04efac13aab5a5c8821dde0541",
+  "generatedBy": "sdk/js/scripts/conformance/payload.gen.ts",
+  "notes": [
+    "Runners substitute $LIBRARY_NAME/$LIBRARY_VERSION with their own identity and must add their platform context blocks (app/device/os/network/screen/timezone/...) — compare after removing every context key not present in `expected` except library/consent/identities, and never compare the ignoreContextKeys.",
+    "timestamp === sentAt === event CREATION time (isoNow once per payload), ISO-8601 UTC with exactly 3 fractional digits; messageId = uuid v4 lowercase.",
+    "Top-level key order: messageId, type, anonymousId, context, timestamp, sentAt, [userId], then per-type fields. context.identities and a missing context.consent are attached at ENQUEUE time.",
+    "page/* cases are JS-only (platforms tag); mobile has screen()."
+  ],
+  "cases": [
+    {
+      "id": "track/minimal",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Button Clicked"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Button Clicked"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Button Clicked\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "track/with-properties",
+      "description": "properties pass through verbatim incl. nested objects, arrays, numbers, booleans and null",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Order Completed",
+              {
+                "order_id": "o-1",
+                "total": 99.5,
+                "quantity": 2,
+                "gift": false,
+                "coupon": null,
+                "items": [
+                  {
+                    "sku": "A",
+                    "price": 10
+                  }
+                ],
+                "meta": {
+                  "source": "app"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Order Completed",
+            "properties": {
+              "order_id": "o-1",
+              "total": 99.5,
+              "quantity": 2,
+              "gift": false,
+              "coupon": null,
+              "items": [
+                {
+                  "sku": "A",
+                  "price": 10
+                }
+              ],
+              "meta": {
+                "source": "app"
+              }
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Order Completed\",\"properties\":{\"order_id\":\"o-1\",\"total\":99.5,\"quantity\":2,\"gift\":false,\"coupon\":null,\"items\":[{\"sku\":\"A\",\"price\":10}],\"meta\":{\"source\":\"app\"}}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event",
+            "properties"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "track/empty-event-silent",
+      "description": "track('') produces nothing (silent return, no callback)",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              ""
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [],
+        "payloadsJson": [],
+        "topLevelKeyOrder": [],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "track/whole-number-double",
+      "description": "JS has one number type: 1.0 serialises as 1",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Num",
+              {
+                "a": 1,
+                "b": 2.5,
+                "c": 0,
+                "d": 1e+21
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Num",
+            "properties": {
+              "a": 1,
+              "b": 2.5,
+              "c": 0,
+              "d": 1e+21
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Num\",\"properties\":{\"a\":1,\"b\":2.5,\"c\":0,\"d\":1e+21}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event",
+            "properties"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "identify/userid-and-traits",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "identify",
+            "args": [
+              "user-1",
+              {
+                "plan": "pro"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "identify",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "user-1",
+            "traits": {
+              "plan": "pro"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"identify\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"user-1\",\"traits\":{\"plan\":\"pro\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "traits"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "identify/traits-only-anonymous",
+      "description": "identify without userId stays anonymous",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "identify",
+            "args": [
+              null,
+              {
+                "plan": "free"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "identify",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "traits": {
+              "plan": "free"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"identify\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"traits\":{\"plan\":\"free\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "traits"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "identify/then-track-carries-userid",
+      "description": "userId is appended AFTER sentAt in the base payload",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "identify",
+            "args": [
+              "user-1"
+            ]
+          },
+          {
+            "method": "track",
+            "args": [
+              "After"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "identify",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "user-1"
+          },
+          {
+            "messageId": "00000000-0000-4000-8000-000000000003",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 2,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": false,
+                "eventCount": 2,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "user-1",
+            "event": "After"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"identify\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"user-1\"}",
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000003\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":2,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":false,\"eventCount\":2,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"user-1\",\"event\":\"After\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId"
+          ],
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "screen/all-fields",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "screen",
+            "args": [
+              "Shop",
+              "Product",
+              {
+                "sku": "A"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "screen",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 1,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web",
+                "lastName": "Product"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "category": "Shop",
+            "name": "Product",
+            "properties": {
+              "sku": "A"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"screen\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":1,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\",\"lastName\":\"Product\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"category\":\"Shop\",\"name\":\"Product\",\"properties\":{\"sku\":\"A\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "category",
+            "name",
+            "properties"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "screen/name-only",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "screen",
+            "args": [
+              null,
+              "Home"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "screen",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 1,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web",
+                "lastName": "Home"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "name": "Home"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"screen\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":1,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\",\"lastName\":\"Home\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"name\":\"Home\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "name"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "page/all-fields",
+      "platforms": [
+        "js"
+      ],
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "page",
+            "args": [
+              "Docs",
+              "Getting Started",
+              {
+                "section": "install"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "page",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 1,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web",
+                "lastName": "Getting Started"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "category": "Docs",
+            "name": "Getting Started",
+            "properties": {
+              "section": "install"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"page\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":1,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\",\"lastName\":\"Getting Started\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"category\":\"Docs\",\"name\":\"Getting Started\",\"properties\":{\"section\":\"install\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "category",
+            "name",
+            "properties"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "group/with-traits",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "group",
+            "args": [
+              "acme",
+              {
+                "plan": "enterprise"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "group",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "groupId": "acme",
+            "traits": {
+              "plan": "enterprise"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"group\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"groupId\":\"acme\",\"traits\":{\"plan\":\"enterprise\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "groupId",
+            "traits"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "group/empty-silent",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "group",
+            "args": [
+              ""
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [],
+        "payloadsJson": [],
+        "topLevelKeyOrder": [],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "alias/with-previous",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "alias",
+            "args": [
+              "new-id",
+              "old-id"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "alias",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "new-id",
+            "previousId": "old-id"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"alias\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"new-id\",\"previousId\":\"old-id\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "previousId"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "alias/fallback-previous-is-anonymous",
+      "description": "previousId defaults to the current anonymousId",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "alias",
+            "args": [
+              "new-id"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "alias",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "new-id",
+            "previousId": "11111111-1111-4111-8111-111111111111"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"alias\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"new-id\",\"previousId\":\"11111111-1111-4111-8111-111111111111\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "previousId"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "alias/empty-silent",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "alias",
+            "args": [
+              ""
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [],
+        "payloadsJson": [],
+        "topLevelKeyOrder": [],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/integration-stamped",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {
+          "integration": {
+            "name": "gtm-template",
+            "version": "0.1.0"
+          }
+        },
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Ev"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION",
+                "integration": {
+                  "name": "gtm-template",
+                  "version": "0.1.0"
+                }
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Ev"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\",\"integration\":{\"name\":\"gtm-template\",\"version\":\"0.1.0\"}},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Ev\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/integration-partial-omitted",
+      "description": "integration needs BOTH name and version or it is dropped",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {
+          "integration": {
+            "name": "only-name"
+          }
+        },
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Ev"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Ev"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Ev\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/identities-attached",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {
+            "zeotap_user_identities": "{\"email\":{\"sha256_lowercase\":\"e256l\",\"sha256_uppercase\":\"e256u\",\"sha1_lowercase\":\"e1l\",\"sha1_uppercase\":\"e1u\"},\"fpuid\":\"fp-1\"}"
+          }
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "track",
+            "args": [
+              "Ev"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              },
+              "identities": {
+                "email": {
+                  "sha256_lowercase": "e256l",
+                  "sha256_uppercase": "e256u",
+                  "sha1_lowercase": "e1l",
+                  "sha1_uppercase": "e1u"
+                },
+                "fpuid": "fp-1"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Ev"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"},\"identities\":{\"email\":{\"sha256_lowercase\":\"e256l\",\"sha256_uppercase\":\"e256u\",\"sha1_lowercase\":\"e1l\",\"sha1_uppercase\":\"e1u\"},\"fpuid\":\"fp-1\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Ev\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/consent-parsed-attached",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "setConsent",
+            "args": [
+              {
+                "analytics": true,
+                "advertising": false
+              }
+            ]
+          },
+          {
+            "method": "track",
+            "args": [
+              "Ev"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "consent": {
+                "analytics": true,
+                "advertising": false
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Ev"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"consent\":{\"analytics\":true,\"advertising\":false},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Ev\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/consent-tcf-attached",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "setConsent",
+            "args": [
+              {
+                "tcfString": "CQ.tc"
+              }
+            ]
+          },
+          {
+            "method": "identify",
+            "args": [
+              "user-1"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "identify",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "consent": {
+                "tcfString": "CQ.tc"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "user-1"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"identify\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"consent\":{\"tcfString\":\"CQ.tc\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"user-1\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/consent-usprivacy-attached",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {}
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "setConsent",
+            "args": [
+              {
+                "usPrivacy": "1YNN"
+              }
+            ]
+          },
+          {
+            "method": "track",
+            "args": [
+              "Ev"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "consent": {
+                "usPrivacy": "1YNN"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "event": "Ev"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"consent\":{\"usPrivacy\":\"1YNN\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"event\":\"Ev\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "event"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/preseeded-userid",
+      "description": "a persisted userId from a previous session rides on every event",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {
+            "zeotap_user_id": "persisted-user"
+          }
+        },
+        "options": {},
+        "calls": [
+          {
+            "method": "screen",
+            "args": [
+              null,
+              "Home"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "screen",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION"
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 1,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web",
+                "lastName": "Home"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "persisted-user",
+            "name": "Home"
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"screen\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\"},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":1,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\",\"lastName\":\"Home\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"persisted-user\",\"name\":\"Home\"}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "name"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    },
+    {
+      "id": "context/everything",
+      "input": {
+        "namespace": "zeotap",
+        "fixture": {
+          "anonymousId": "11111111-1111-4111-8111-111111111111",
+          "now": "2026-01-15T10:20:30.123Z",
+          "uuidSequence": "00000000-0000-4000-8000-{n:012d} starting at n=1",
+          "storage": {
+            "zeotap_user_identities": "{\"email\":{\"sha256_lowercase\":\"e256l\",\"sha256_uppercase\":\"e256u\",\"sha1_lowercase\":\"e1l\",\"sha1_uppercase\":\"e1u\"},\"fpuid\":\"fp-1\"}",
+            "zeotap_user_id": "user-9"
+          }
+        },
+        "options": {
+          "integration": {
+            "name": "react-native-sdk",
+            "version": "1.2.3"
+          }
+        },
+        "calls": [
+          {
+            "method": "setConsent",
+            "args": [
+              {
+                "analytics": true,
+                "marketing": true,
+                "advertising": true,
+                "functional": true
+              }
+            ]
+          },
+          {
+            "method": "track",
+            "args": [
+              "Everything",
+              {
+                "k": "v"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "payloads": [
+          {
+            "messageId": "00000000-0000-4000-8000-000000000001",
+            "type": "track",
+            "anonymousId": "11111111-1111-4111-8111-111111111111",
+            "context": {
+              "library": {
+                "name": "$LIBRARY_NAME",
+                "version": "$LIBRARY_VERSION",
+                "integration": {
+                  "name": "react-native-sdk",
+                  "version": "1.2.3"
+                }
+              },
+              "consent": {
+                "analytics": true,
+                "marketing": true,
+                "advertising": true,
+                "functional": true
+              },
+              "session": {
+                "id": "00000000-0000-4000-8000-000000000002",
+                "sequence": 1,
+                "ordinal": 1,
+                "startedAt": "2026-01-15T10:20:30.123Z",
+                "isNew": true,
+                "eventCount": 1,
+                "pageCount": 0,
+                "durationMs": 0,
+                "activeMs": 0,
+                "entryUrl": "",
+                "referrer": "",
+                "lastUrl": "",
+                "timeoutMs": 1800000,
+                "platform": "web"
+              },
+              "identities": {
+                "email": {
+                  "sha256_lowercase": "e256l",
+                  "sha256_uppercase": "e256u",
+                  "sha1_lowercase": "e1l",
+                  "sha1_uppercase": "e1u"
+                },
+                "fpuid": "fp-1"
+              }
+            },
+            "timestamp": "2026-01-15T10:20:30.123Z",
+            "sentAt": "2026-01-15T10:20:30.123Z",
+            "userId": "user-9",
+            "event": "Everything",
+            "properties": {
+              "k": "v"
+            }
+          }
+        ],
+        "payloadsJson": [
+          "{\"messageId\":\"00000000-0000-4000-8000-000000000001\",\"type\":\"track\",\"anonymousId\":\"11111111-1111-4111-8111-111111111111\",\"context\":{\"library\":{\"name\":\"$LIBRARY_NAME\",\"version\":\"$LIBRARY_VERSION\",\"integration\":{\"name\":\"react-native-sdk\",\"version\":\"1.2.3\"}},\"consent\":{\"analytics\":true,\"marketing\":true,\"advertising\":true,\"functional\":true},\"session\":{\"id\":\"00000000-0000-4000-8000-000000000002\",\"sequence\":1,\"ordinal\":1,\"startedAt\":\"2026-01-15T10:20:30.123Z\",\"isNew\":true,\"eventCount\":1,\"pageCount\":0,\"durationMs\":0,\"activeMs\":0,\"entryUrl\":\"\",\"referrer\":\"\",\"lastUrl\":\"\",\"timeoutMs\":1800000,\"platform\":\"web\"},\"identities\":{\"email\":{\"sha256_lowercase\":\"e256l\",\"sha256_uppercase\":\"e256u\",\"sha1_lowercase\":\"e1l\",\"sha1_uppercase\":\"e1u\"},\"fpuid\":\"fp-1\"}},\"timestamp\":\"2026-01-15T10:20:30.123Z\",\"sentAt\":\"2026-01-15T10:20:30.123Z\",\"userId\":\"user-9\",\"event\":\"Everything\",\"properties\":{\"k\":\"v\"}}"
+        ],
+        "topLevelKeyOrder": [
+          [
+            "messageId",
+            "type",
+            "anonymousId",
+            "context",
+            "timestamp",
+            "sentAt",
+            "userId",
+            "event",
+            "properties"
+          ]
+        ],
+        "ignoreContextKeys": [
+          "page",
+          "userAgent",
+          "locale"
+        ]
+      }
+    }
+  ]
+}

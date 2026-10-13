@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/consent-persistence.schema.json",
+  "title": "consent-persistence conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "consent-persistence"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "namespace",
+              "expiryDays",
+              "nowMs"
+            ],
+            "properties": {
+              "namespace": {
+                "type": "string"
+              },
+              "expiryDays": {
+                "type": "integer"
+              },
+              "nowMs": {
+                "type": "integer"
+              },
+              "saves": {
+                "type": "array"
+              },
+              "storage": {
+                "type": "object"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "properties": {
+              "afterEachSave": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "writes",
+                    "main",
+                    "mainJson",
+                    "tcf",
+                    "tcfJson"
+                  ],
+                  "properties": {
+                    "writes": {
+                      "type": "integer"
+                    },
+                    "main": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "mainJson": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "tcf": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "tcfJson": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "loaded": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "result": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "storageAfter": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/identities.schema.json",
+  "title": "identities conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "identities"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "namespace",
+              "steps"
+            ],
+            "properties": {
+              "namespace": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "afterEachStep",
+              "reloaded"
+            ],
+            "properties": {
+              "afterEachStep": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "stored",
+                    "persistedJson"
+                  ],
+                  "properties": {
+                    "stored": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "persistedJson": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              },
+              "reloaded": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

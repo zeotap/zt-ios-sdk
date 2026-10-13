@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/consent-signals.schema.json",
+  "title": "consent-signals conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "consent-signals"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [],
+            "properties": {}
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "track",
+              "identify",
+              "cookieSync"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "track": {
+                "type": "boolean"
+              },
+              "identify": {
+                "type": "boolean"
+              },
+              "cookieSync": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

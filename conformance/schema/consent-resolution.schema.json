@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/consent-resolution.schema.json",
+  "title": "consent-resolution conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "consent-resolution"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "steps"
+            ],
+            "properties": {
+              "steps": {
+                "type": "array"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "afterEachStep"
+            ],
+            "properties": {
+              "afterEachStep": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "resolved",
+                    "getConsent",
+                    "listenerCalls"
+                  ],
+                  "properties": {
+                    "accepted": {
+                      "type": "boolean"
+                    },
+                    "resolved": {
+                      "type": "boolean"
+                    },
+                    "source": {
+                      "enum": [
+                        "manual",
+                        "cmp",
+                        "storage",
+                        "default"
+                      ]
+                    },
+                    "signals": {
+                      "type": "object",
+                      "required": [
+                        "track",
+                        "identify",
+                        "cookieSync"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "track": {
+                          "type": "boolean"
+                        },
+                        "identify": {
+                          "type": "boolean"
+                        },
+                        "cookieSync": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "tcfString": {
+                      "type": "string"
+                    },
+                    "gdprApplies": {
+                      "type": "boolean"
+                    },
+                    "ts": {
+                      "type": "integer"
+                    },
+                    "getConsent": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "listenerCalls": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

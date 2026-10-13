@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/storage-keys.schema.json",
+  "title": "storage-keys conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "storage-keys"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "namespace"
+            ],
+            "properties": {
+              "namespace": {
+                "type": "string"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "anonymousId",
+              "userId",
+              "userIdentities",
+              "consent",
+              "consentTcf"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "anonymousId": {
+                "type": "string"
+              },
+              "userId": {
+                "type": "string"
+              },
+              "userIdentities": {
+                "type": "string"
+              },
+              "consent": {
+                "type": "string"
+              },
+              "consentTcf": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

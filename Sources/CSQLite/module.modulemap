@@ -1,0 +1,6 @@
+// System SQLite for the Linux test host. Apple platforms `import SQLite3` instead.
+module CSQLite [system] {
+    header "shim.h"
+    link "sqlite3"
+    export *
+}

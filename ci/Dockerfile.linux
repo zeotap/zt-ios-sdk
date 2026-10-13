@@ -1,0 +1,29 @@
+# Linux test host for the SignalSmith iOS SDK (increment 243).
+#
+# XCTest ships only with Xcode, so a Mac with Command Line Tools cannot run
+# `swift test`; this image can (Foundation + XCTest + swift-crypto + system
+# SQLite). It runs the unit and conformance suites — everything that is not
+# UIKit/simulator-bound. macOS runners (`.github/workflows/sdk-ios.yml`) cover
+# xcodebuild, the simulator, pod lint and the xcframework.
+#
+#   docker build -t signalsmith-swift-test:local -f sdk/ios/ci/Dockerfile.linux sdk/ios/ci
+#   docker run --rm -v "$PWD/sdk:/work/sdk" -w /work/sdk/ios signalsmith-swift-test:local scripts/test-linux.sh
+# (scripts/test-linux.sh runs one class per process with a stall retry — swift-corelibs-xctest has an
+# intermittent XCTWaiter lost-wakeup on Linux — and uses .build-linux because the host toolchain's
+# .build/checkouts is not writable from the container)
+# Swift 5.10, deliberately: with the 6.0/6.1 images swift-corelibs-xctest stalls before running a
+# test roughly every other process start (the test Task never gets a worker thread) — measured
+# 5-7/12 on 6.0.3 vs 2/12 on 5.10 on the same VM, and 12/12 for the x86_64 image under Rosetta.
+# The package compiles on 5.10 unchanged; scripts/test-linux.sh still retries stalled classes.
+ARG SWIFT_IMAGE=swift:5.10-jammy
+FROM ${SWIFT_IMAGE}
+# python3 is for scripts/api-flatten.py, which turns the swift-api-digester dump
+# into the committed public-API baseline (increment 253). The swift:*-jammy base
+# already ships it, so this line installs nothing today — it is here so the
+# dependency is DECLARED rather than inherited by luck, and an image bump that
+# drops it fails at `docker build` instead of at `make sdk-ios-test`.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends libsqlite3-dev pkg-config python3 \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /work
+CMD ["swift", "test"]

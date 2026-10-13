@@ -1,0 +1,736 @@
+{
+  "family": "transport",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/transport.ts",
+    "sdk/js/src/transport.test.ts"
+  ],
+  "sourceHash": "sha256:9208679f657dc0e118c8f6e06d929ac5c382b77a47556d4237eceb73daab5e25",
+  "generatedBy": "sdk/js/scripts/conformance/transport.gen.ts",
+  "notes": [
+    "Attempts 0..3 (MAX_RETRIES=3 → 4 total); delay before retry attempt n = 500 * 2^(n-1) ms → 500, 1000, 2000. Retry on 5xx, 429 and network errors; every other 4xx throws immediately with `Ingest API error <status>: <body>`.",
+    "The body is built ONCE per send(): identical bytes (same messageIds) on every retry — the server is at-least-once with no dedupe.",
+    "Web drops the batch after exhaustion (outcome 'exhausted'); mobile SDKs deliberately RELEASE the reserved rows for a later flush instead — the classification (which statuses retry) is the contract, not the post-exhaustion policy.",
+    "headers is the complete header set — no X-FP-Cookie/X-FP-Reset on mobile. keepalive/credentials are browser fetch() options with no mobile equivalent.",
+    "Envelope sentAt is TRANSMISSION time (per-event sentAt stays creation time); ingest currently ignores the envelope sentAt."
+  ],
+  "cases": [
+    {
+      "id": "ok/200",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "ok/204",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          204
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "ok/empty-batch-no-request",
+      "description": "an empty batch never touches the network",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 0,
+        "responses": []
+      },
+      "expected": {
+        "attempts": 0,
+        "delaysMs": [],
+        "outcome": "succeeded"
+      }
+    },
+    {
+      "id": "retry/500-then-200",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          500,
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 2,
+        "delaysMs": [
+          500
+        ],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "retry/503-502-then-200",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          503,
+          502,
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 3,
+        "delaysMs": [
+          500,
+          1000
+        ],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "retry/429-then-200",
+      "description": "429 is the one 4xx that retries",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          429,
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 2,
+        "delaysMs": [
+          500
+        ],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "retry/500-500-500-then-200",
+      "description": "4th attempt succeeds — MAX_RETRIES=3 means 4 total attempts",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          500,
+          500,
+          500,
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 4,
+        "delaysMs": [
+          500,
+          1000,
+          2000
+        ],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "exhausted/500x4",
+      "description": "after 4 attempts the batch is DROPPED silently (web) — mobile releases it instead, see notes",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          500,
+          500,
+          500,
+          500
+        ]
+      },
+      "expected": {
+        "attempts": 4,
+        "delaysMs": [
+          500,
+          1000,
+          2000
+        ],
+        "outcome": "exhausted",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "exhausted/network-x4",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          "network",
+          "network",
+          "network",
+          "network"
+        ]
+      },
+      "expected": {
+        "attempts": 4,
+        "delaysMs": [
+          500,
+          1000,
+          2000
+        ],
+        "outcome": "exhausted",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "retry/network-network-then-200",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          "network",
+          "network",
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 3,
+        "delaysMs": [
+          500,
+          1000
+        ],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/400",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          400
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 400: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/401",
+      "description": "bad write key: no retry (surface via error hook on mobile)",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          401
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 401: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/403",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          403
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 403: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/404",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          404
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 404: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/422",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          422
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 422: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "throw/500-then-400",
+      "description": "a non-retryable status after a retry still throws immediately",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          500,
+          400
+        ]
+      },
+      "expected": {
+        "attempts": 2,
+        "delaysMs": [
+          500
+        ],
+        "outcome": "threw",
+        "errorMessagePrefix": "Ingest API error 400: {}",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "request/trailing-slash-stripped",
+      "input": {
+        "apiHost": "https://ingest.example/",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "request/native-app-id-header",
+      "input": {
+        "apiHost": "https://ingest.example",
+        "writeKey": "wk_test",
+        "nativeAppId": "5d6c3a0e-0000-4000-8000-000000000001",
+        "eventCount": 2,
+        "responses": [
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://ingest.example/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test",
+            "X-Native-App-ID": "5d6c3a0e-0000-4000-8000-000000000001"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    },
+    {
+      "id": "request/path-proxy-host",
+      "description": "apiHost may carry a path (first-party proxy)",
+      "input": {
+        "apiHost": "https://www.site.com/cdp",
+        "writeKey": "wk_test",
+        "nativeAppId": "",
+        "eventCount": 2,
+        "responses": [
+          200
+        ]
+      },
+      "expected": {
+        "attempts": 1,
+        "delaysMs": [],
+        "outcome": "succeeded",
+        "request": {
+          "url": "https://www.site.com/cdp/v1/batch",
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Write-Key": "wk_test"
+          },
+          "keepalive": true,
+          "credentials": "same-origin"
+        },
+        "envelope": {
+          "keys": [
+            "batch",
+            "sentAt"
+          ],
+          "batchLength": 2,
+          "sentAt": "2026-01-15T10:20:30.123Z"
+        },
+        "sameBodyOnRetry": true
+      }
+    }
+  ]
+}

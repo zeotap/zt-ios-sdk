@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/payload.schema.json",
+  "title": "payload conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "payload"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "namespace",
+              "fixture",
+              "options",
+              "calls"
+            ],
+            "properties": {
+              "namespace": {
+                "type": "string"
+              },
+              "fixture": {
+                "type": "object"
+              },
+              "options": {
+                "type": "object"
+              },
+              "calls": {
+                "type": "array"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "payloads",
+              "payloadsJson",
+              "topLevelKeyOrder",
+              "ignoreContextKeys"
+            ],
+            "properties": {
+              "payloads": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "messageId",
+                    "type",
+                    "anonymousId",
+                    "context",
+                    "timestamp",
+                    "sentAt"
+                  ]
+                }
+              },
+              "payloadsJson": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "topLevelKeyOrder": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "ignoreContextKeys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

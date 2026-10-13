@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/gating.schema.json",
+  "title": "gating conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "gating"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "namespace",
+              "anonymousId",
+              "options",
+              "steps"
+            ],
+            "properties": {
+              "namespace": {
+                "type": "string"
+              },
+              "anonymousId": {
+                "type": "string"
+              },
+              "options": {
+                "type": "object"
+              },
+              "steps": {
+                "type": "array"
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "enqueued",
+              "callbacks",
+              "consentState",
+              "storage"
+            ],
+            "properties": {
+              "enqueued": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "type"
+                  ]
+                }
+              },
+              "callbacks": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "consentState": {
+                "type": "object",
+                "required": [
+                  "resolved"
+                ]
+              },
+              "storage": {
+                "type": "object",
+                "required": [
+                  "userId",
+                  "userIdentities",
+                  "consent"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

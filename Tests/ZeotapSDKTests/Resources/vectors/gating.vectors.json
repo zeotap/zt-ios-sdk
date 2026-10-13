@@ -1,0 +1,1535 @@
+{
+  "family": "gating",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/client.ts",
+    "sdk/js/src/consent.ts",
+    "sdk/js/src/consent-state.ts",
+    "sdk/js/src/client.test.ts"
+  ],
+  "sourceHash": "sha256:592b0d7d71d4cb9d6731052ed1cff55e41de43e430c1154519c2abf62d7fbc25",
+  "generatedBy": "sdk/js/scripts/conformance/gating.gen.ts",
+  "notes": [
+    "gatingActive = consent.require || consent.default === 'denied'. Inactive → every event enqueues immediately with consent merely attached.",
+    "Active + unresolved → FIFO buffer capped at maxBufferedEvents (drop NEWEST, callback error '[SDK] Event dropped: pre-consent buffer full'); resolved granted → apply side effects (userId persistence), patch missing userId, enqueue; resolved denied → callback error '[SDK] Dropped <type>: no <signal> consent' ('identity update' for setUserIdentities: '[SDK] Identities dropped: no identify consent').",
+    "The default timer (cmpTimeoutMs, 10000 default) resolves with consent.default when nothing else answers; a reset() re-arms it.",
+    "`enqueued` lists what reached the transport in order, with only type/event/name/userId/context.consent/context.identities. callbacks[id] = null on success, else the error message. `reload` = new client over the same storage (hydration, source 'storage'). Runners map 'screen' 1:1; web 'page' is not used here.",
+    "TCF/__tcfapi timing cases are browser-only and covered per platform by native tests (see tcf.vectors.json for the translation contract)."
+  ],
+  "cases": [
+    {
+      "id": "default/flows-immediately",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {},
+        "steps": [
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev"
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "default/attach-only-never-drops",
+      "description": "gating inactive: a denying setConsent still lets events through, consent merely attached",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {},
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            }
+          },
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev",
+            "consent": {
+              "analytics": false
+            }
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": false
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/buffers-then-fifo-replay",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "First",
+            "cb": "a"
+          },
+          {
+            "op": "track",
+            "event": "Second",
+            "cb": "b"
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "First",
+            "consent": {
+              "analytics": true
+            }
+          },
+          {
+            "type": "track",
+            "event": "Second",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {
+          "a": null,
+          "b": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/buffer-cap-drops-newest",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "maxBufferedEvents": 2
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "A",
+            "cb": "a"
+          },
+          {
+            "op": "track",
+            "event": "B",
+            "cb": "b"
+          },
+          {
+            "op": "track",
+            "event": "C",
+            "cb": "c"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "A",
+            "consent": {
+              "analytics": true
+            }
+          },
+          {
+            "type": "track",
+            "event": "B",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {
+          "c": "[SDK] Event dropped: pre-consent buffer full",
+          "a": null,
+          "b": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/timeout-default-granted",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "cmpTimeoutMs": 5000
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 4999
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 1
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev"
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "source": "default"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "default",
+            "ts": 1768472435123,
+            "exp": 1800008435123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/timeout-default-denied",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "default": "denied",
+            "cmpTimeoutMs": 5000
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 5000
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped track: no track consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "default"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1768472435123,
+            "exp": 1800008435123
+          }
+        }
+      }
+    },
+    {
+      "id": "default-denied/alone-activates-gating",
+      "description": "default:'denied' without require:true still gates; 10 s default timeout then denies",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "default": "denied",
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 9999
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 1
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped track: no track consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "default"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1768472440123,
+            "exp": 1800008440123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/manual-denial-drops",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            }
+          },
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          },
+          {
+            "op": "identify",
+            "userId": "u1",
+            "cb": "b"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped track: no track consent",
+          "b": "[SDK] Dropped identify: no identify consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": false
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/deferred-userid-persistence",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "identify",
+            "userId": "user-1",
+            "cb": "a"
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "identify",
+            "userId": "user-1",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": "user-1",
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/never-persist-userid-when-denied",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "default": "denied",
+            "cmpTimeoutMs": 1000
+          }
+        },
+        "steps": [
+          {
+            "op": "identify",
+            "userId": "user-1",
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 1000
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped identify: no identify consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "default"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1768472431123,
+            "exp": 1800008431123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/patch-userid-onto-buffered",
+      "description": "a buffered track built before identify applied gains the userId on replay",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "identify",
+            "userId": "user-1"
+          },
+          {
+            "op": "track",
+            "event": "After Identify"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "identify",
+            "userId": "user-1",
+            "consent": {
+              "analytics": true
+            }
+          },
+          {
+            "type": "track",
+            "event": "After Identify",
+            "userId": "user-1",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {},
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": "user-1",
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/reset-clears-buffer",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Buffered",
+            "cb": "a"
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {},
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "require/replayed-events-carry-release-consent",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Held"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Held",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {},
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "persist/manual-then-hydrate-on-reload",
+      "description": "after reload the stored resolution (source 'storage') gates immediately",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          },
+          {
+            "op": "track",
+            "event": "Before"
+          },
+          {
+            "op": "flush"
+          },
+          {
+            "op": "reload"
+          },
+          {
+            "op": "track",
+            "event": "After",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Before",
+            "consent": {
+              "analytics": true
+            }
+          },
+          {
+            "type": "track",
+            "event": "After",
+            "consent": {
+              "analytics": true
+            }
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "storage"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "persist/hydrated-denial-drops-on-reload",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            }
+          },
+          {
+            "op": "reload"
+          },
+          {
+            "op": "track",
+            "event": "After",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped track: no track consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "storage"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": false
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "persist/default-decision-persists",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "default": "denied",
+            "cmpTimeoutMs": 1000
+          }
+        },
+        "steps": [
+          {
+            "op": "track",
+            "event": "Ev",
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 1000
+          },
+          {
+            "op": "reload"
+          },
+          {
+            "op": "track",
+            "event": "After",
+            "cb": "b"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped track: no track consent",
+          "b": "[SDK] Dropped track: no track consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "storage"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1768472431123,
+            "exp": 1800008431123
+          }
+        }
+      }
+    },
+    {
+      "id": "persist/persist-false-writes-nothing",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "persist": false
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          },
+          {
+            "op": "reload",
+            "options": {
+              "consent": {
+                "require": true,
+                "cmp": "none",
+                "persist": false
+              }
+            }
+          },
+          {
+            "op": "track",
+            "event": "After",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "persist/reset-clears-persisted-consent",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "reload"
+          },
+          {
+            "op": "track",
+            "event": "After",
+            "cb": "a"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "state/get-consent-state",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {},
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "identities/buffered-until-granted",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none"
+          }
+        },
+        "steps": [
+          {
+            "op": "setUserIdentities",
+            "identities": {
+              "fpuid": "fp-1"
+            },
+            "cb": "a"
+          },
+          {
+            "op": "track",
+            "event": "Ev"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev",
+            "consent": {
+              "analytics": true
+            },
+            "identities": {
+              "fpuid": "fp-1"
+            }
+          }
+        ],
+        "callbacks": {
+          "a": null
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": false
+          },
+          "source": "manual"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": {
+            "fpuid": "fp-1"
+          },
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "input": {
+              "analytics": true
+            },
+            "source": "manual",
+            "ts": 1768472430123,
+            "exp": 1800008430123
+          }
+        }
+      }
+    },
+    {
+      "id": "identities/denied-error",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "default": "denied",
+            "cmpTimeoutMs": 1000
+          }
+        },
+        "steps": [
+          {
+            "op": "setUserIdentities",
+            "identities": {
+              "fpuid": "fp-1"
+            },
+            "cb": "a"
+          },
+          {
+            "op": "advanceMs",
+            "ms": 1000
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {
+          "a": "[SDK] Dropped identity update: no identify consent"
+        },
+        "consentState": {
+          "resolved": true,
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "default"
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": {
+            "v": 1,
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1768472431123,
+            "exp": 1800008431123
+          }
+        }
+      }
+    },
+    {
+      "id": "identities/unset-never-gated",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {
+          "consent": {
+            "require": true,
+            "cmp": "none",
+            "default": "denied"
+          }
+        },
+        "steps": [
+          {
+            "op": "unsetUserIdentities",
+            "keys": [
+              "email"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "identities/reset-clears",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {},
+        "steps": [
+          {
+            "op": "setUserIdentities",
+            "identities": {
+              "fpuid": "fp-1"
+            }
+          },
+          {
+            "op": "reset"
+          },
+          {
+            "op": "track",
+            "event": "Ev"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev"
+          }
+        ],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": null,
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "identities/same-tick-ordering",
+      "description": "a track issued right after setUserIdentities (same tick) carries the identities",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {},
+        "steps": [
+          {
+            "op": "setUserIdentities",
+            "identities": {
+              "fpuid": "fp-1",
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "track",
+            "event": "Ev"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev",
+            "identities": {
+              "fpuid": "fp-1",
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            }
+          }
+        ],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": {
+            "fpuid": "fp-1",
+            "email": {
+              "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+              "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+              "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+              "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+            }
+          },
+          "consent": null
+        }
+      }
+    },
+    {
+      "id": "identities/hashed-input-attached",
+      "input": {
+        "namespace": "zeotap",
+        "anonymousId": "11111111-1111-4111-8111-111111111111",
+        "options": {},
+        "steps": [
+          {
+            "op": "setUserIdentities",
+            "identities": {
+              "email_sha256_lowercase": "h"
+            },
+            "hashed": true
+          },
+          {
+            "op": "track",
+            "event": "Ev"
+          }
+        ]
+      },
+      "expected": {
+        "enqueued": [
+          {
+            "type": "track",
+            "event": "Ev",
+            "identities": {
+              "email": {
+                "sha256_lowercase": "h"
+              }
+            }
+          }
+        ],
+        "callbacks": {},
+        "consentState": {
+          "resolved": false
+        },
+        "storage": {
+          "userId": null,
+          "userIdentities": {
+            "email": {
+              "sha256_lowercase": "h"
+            }
+          },
+          "consent": null
+        }
+      }
+    }
+  ]
+}

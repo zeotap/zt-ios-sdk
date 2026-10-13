@@ -1,0 +1,1002 @@
+{
+  "family": "consent-persistence",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/consent-persistence.ts",
+    "sdk/js/src/consent-persistence.test.ts"
+  ],
+  "sourceHash": "sha256:d33a0eb46ea083813d3c3c43ff6a54a3c37f9ad806648ec8a623029364779186",
+  "generatedBy": "sdk/js/scripts/conformance/consent-persistence.gen.ts",
+  "notes": [
+    "Main record {v:1, signals, input?, gdprApplies?, source, ts, exp} under {ns}_consent; side record {v:1, tcfString, ts, exp} under {ns}_consent_tcf. exp = nowMs + expiryDays*86400000.",
+    "mainJson/tcfJson are the exact persisted strings (JSON.stringify key order). A byte-comparing runner must reproduce them; a structural runner compares main/tcf.",
+    "load() returns the record with source 'storage' and the record's ORIGINAL ts; invalid/expired main → null and BOTH keys removed; invalid/expired side key → tcfString absent and the side key removed."
+  ],
+  "cases": [
+    {
+      "id": "save/manual-parsed",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true,
+                "advertising": true
+              },
+              "source": "manual",
+              "ts": 1699999999990
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true,
+                "advertising": true
+              },
+              "source": "manual",
+              "ts": 1699999999990,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true,\"advertising\":true},\"source\":\"manual\",\"ts\":1699999999990,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "input": {
+            "analytics": true,
+            "advertising": true
+          },
+          "source": "storage",
+          "ts": 1699999999990
+        }
+      }
+    },
+    {
+      "id": "save/manual-tcfstring-goes-to-side-key",
+      "description": "a manual {tcfString} input is stripped from the main record and stored under {ns}_consent_tcf",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "tcfString": "CQ.manual"
+              },
+              "tcfString": "CQ.manual",
+              "source": "manual",
+              "ts": 1699999999990
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 2,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "source": "manual",
+              "ts": 1699999999990,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"source\":\"manual\",\"ts\":1699999999990,\"exp\":1731536000000}",
+            "tcf": {
+              "v": 1,
+              "tcfString": "CQ.manual",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "tcfJson": "{\"v\":1,\"tcfString\":\"CQ.manual\",\"ts\":1700000000000,\"exp\":1731536000000}"
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "tcfString": "CQ.manual",
+          "source": "storage",
+          "ts": 1699999999990
+        }
+      }
+    },
+    {
+      "id": "save/cmp-with-gdpr",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": false,
+                "cookieSync": false
+              },
+              "tcfString": "CQ.cmp",
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1699999999995
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 2,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": false,
+                "cookieSync": false
+              },
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1699999999995,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":false,\"cookieSync\":false},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699999999995,\"exp\":1731536000000}",
+            "tcf": {
+              "v": 1,
+              "tcfString": "CQ.cmp",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "tcfJson": "{\"v\":1,\"tcfString\":\"CQ.cmp\",\"ts\":1700000000000,\"exp\":1731536000000}"
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": false,
+            "cookieSync": false
+          },
+          "gdprApplies": true,
+          "tcfString": "CQ.cmp",
+          "source": "storage",
+          "ts": 1699999999995
+        }
+      }
+    },
+    {
+      "id": "save/cmp-gdpr-not-applicable",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "gdprApplies": false,
+              "source": "cmp",
+              "ts": 1699999999995
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "gdprApplies": false,
+              "source": "cmp",
+              "ts": 1699999999995,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":false,\"source\":\"cmp\",\"ts\":1699999999995,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": false,
+          "source": "storage",
+          "ts": 1699999999995
+        }
+      }
+    },
+    {
+      "id": "save/default-source-persists",
+      "description": "an opt-out-by-default decision sticks across launches",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": false,
+                "identify": false,
+                "cookieSync": false
+              },
+              "source": "default",
+              "ts": 1700000000000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": false,
+                "identify": false,
+                "cookieSync": false
+              },
+              "source": "default",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":false,\"identify\":false,\"cookieSync\":false},\"source\":\"default\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "source": "storage",
+          "ts": 1700000000000
+        }
+      }
+    },
+    {
+      "id": "save/custom-expiry-30d",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 30,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000,
+              "exp": 1702592000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1702592000000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "input": {
+            "analytics": true
+          },
+          "source": "storage",
+          "ts": 1700000000000
+        }
+      }
+    },
+    {
+      "id": "save/skip-unchanged",
+      "description": "second identical save performs zero writes (exp is NOT refreshed)",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000
+            }
+          },
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000060000
+            },
+            "atMs": 60000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          },
+          {
+            "writes": 0,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "input": {
+            "analytics": true
+          },
+          "source": "storage",
+          "ts": 1700000000000
+        }
+      }
+    },
+    {
+      "id": "save/changed-signals-rewrite",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000
+            }
+          },
+          {
+            "resolution": {
+              "signals": {
+                "track": false,
+                "identify": false,
+                "cookieSync": false
+              },
+              "input": {
+                "analytics": false
+              },
+              "source": "manual",
+              "ts": 1700000001000
+            },
+            "atMs": 1000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": null,
+            "tcfJson": null
+          },
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": false,
+                "identify": false,
+                "cookieSync": false
+              },
+              "input": {
+                "analytics": false
+              },
+              "source": "manual",
+              "ts": 1700000001000,
+              "exp": 1731536001000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":false,\"identify\":false,\"cookieSync\":false},\"input\":{\"analytics\":false},\"source\":\"manual\",\"ts\":1700000001000,\"exp\":1731536001000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": false,
+            "identify": false,
+            "cookieSync": false
+          },
+          "input": {
+            "analytics": false
+          },
+          "source": "storage",
+          "ts": 1700000001000
+        }
+      }
+    },
+    {
+      "id": "save/tcfstring-change-rewrites",
+      "description": "same signals/input but a different TC string is a change",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "tcfString": "CQ.a",
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000000000
+            }
+          },
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "tcfString": "CQ.b",
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000001000
+            },
+            "atMs": 1000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 2,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": {
+              "v": 1,
+              "tcfString": "CQ.a",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "tcfJson": "{\"v\":1,\"tcfString\":\"CQ.a\",\"ts\":1700000000000,\"exp\":1731536000000}"
+          },
+          {
+            "writes": 2,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000001000,
+              "exp": 1731536001000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1700000001000,\"exp\":1731536001000}",
+            "tcf": {
+              "v": 1,
+              "tcfString": "CQ.b",
+              "ts": 1700000001000,
+              "exp": 1731536001000
+            },
+            "tcfJson": "{\"v\":1,\"tcfString\":\"CQ.b\",\"ts\":1700000001000,\"exp\":1731536001000}"
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": true,
+          "tcfString": "CQ.b",
+          "source": "storage",
+          "ts": 1700000001000
+        }
+      }
+    },
+    {
+      "id": "save/tcfstring-removed-when-absent",
+      "description": "a later resolution without a TC string removes the side key",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "saves": [
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "tcfString": "CQ.a",
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000000000
+            }
+          },
+          {
+            "resolution": {
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000001000
+            },
+            "atMs": 1000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachSave": [
+          {
+            "writes": 2,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "gdprApplies": true,
+              "source": "cmp",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1700000000000,\"exp\":1731536000000}",
+            "tcf": {
+              "v": 1,
+              "tcfString": "CQ.a",
+              "ts": 1700000000000,
+              "exp": 1731536000000
+            },
+            "tcfJson": "{\"v\":1,\"tcfString\":\"CQ.a\",\"ts\":1700000000000,\"exp\":1731536000000}"
+          },
+          {
+            "writes": 1,
+            "main": {
+              "v": 1,
+              "signals": {
+                "track": true,
+                "identify": true,
+                "cookieSync": true
+              },
+              "input": {
+                "analytics": true
+              },
+              "source": "manual",
+              "ts": 1700000001000,
+              "exp": 1731536001000
+            },
+            "mainJson": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1700000001000,\"exp\":1731536001000}",
+            "tcf": null,
+            "tcfJson": null
+          }
+        ],
+        "loaded": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "input": {
+            "analytics": true
+          },
+          "source": "storage",
+          "ts": 1700000001000
+        }
+      }
+    },
+    {
+      "id": "load/valid-parsed",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1699913600000,\"exp\":1731449600000}"
+        }
+      },
+      "expected": {
+        "result": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "input": {
+            "analytics": true
+          },
+          "source": "storage",
+          "ts": 1699913600000
+        },
+        "storageAfter": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"input\":{\"analytics\":true},\"source\":\"manual\",\"ts\":1699913600000,\"exp\":1731449600000}"
+        }
+      }
+    },
+    {
+      "id": "load/valid-with-tcf-side-key",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1731449600000}",
+          "zeotap_consent_tcf": "{\"v\":1,\"tcfString\":\"CQ.stored\",\"ts\":1699913600000,\"exp\":1731449600000}"
+        }
+      },
+      "expected": {
+        "result": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": true,
+          "tcfString": "CQ.stored",
+          "source": "storage",
+          "ts": 1699913600000
+        },
+        "storageAfter": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1731449600000}",
+          "zeotap_consent_tcf": "{\"v\":1,\"tcfString\":\"CQ.stored\",\"ts\":1699913600000,\"exp\":1731449600000}"
+        }
+      }
+    },
+    {
+      "id": "load/expired-main-removes-both",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"source\":\"manual\",\"ts\":1665440000000,\"exp\":1699999999999}",
+          "zeotap_consent_tcf": "{\"v\":1,\"tcfString\":\"CQ.stored\",\"ts\":1665440000000,\"exp\":1700086400000}"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/exp-equal-now-is-expired",
+      "description": "exp <= now",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"source\":\"manual\",\"ts\":1699913600000,\"exp\":1700000000000}"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/corrupt-json",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{not json"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/wrong-version",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":2,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1700086400000}"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/missing-exp",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"source\":\"manual\",\"ts\":1700000000000}"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/missing-signals",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"source\":\"manual\",\"ts\":1700000000000,\"exp\":1700086400000}"
+        }
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    },
+    {
+      "id": "load/expired-tcf-side-key-dropped-main-kept",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}",
+          "zeotap_consent_tcf": "{\"v\":1,\"tcfString\":\"CQ.old\",\"ts\":1699827200000,\"exp\":1699999999999}"
+        }
+      },
+      "expected": {
+        "result": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": true,
+          "source": "storage",
+          "ts": 1699913600000
+        },
+        "storageAfter": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}"
+        }
+      }
+    },
+    {
+      "id": "load/tcf-side-key-empty-string-dropped",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}",
+          "zeotap_consent_tcf": "{\"v\":1,\"tcfString\":\"\",\"ts\":1699913600000,\"exp\":1700086400000}"
+        }
+      },
+      "expected": {
+        "result": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": true,
+          "source": "storage",
+          "ts": 1699913600000
+        },
+        "storageAfter": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}"
+        }
+      }
+    },
+    {
+      "id": "load/tcf-side-key-corrupt-ignored",
+      "description": "a corrupt side record yields no tcfString and is left in place (read is try/caught)",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}",
+          "zeotap_consent_tcf": "garbage"
+        }
+      },
+      "expected": {
+        "result": {
+          "signals": {
+            "track": true,
+            "identify": true,
+            "cookieSync": true
+          },
+          "gdprApplies": true,
+          "source": "storage",
+          "ts": 1699913600000
+        },
+        "storageAfter": {
+          "zeotap_consent": "{\"v\":1,\"signals\":{\"track\":true,\"identify\":true,\"cookieSync\":true},\"gdprApplies\":true,\"source\":\"cmp\",\"ts\":1699913600000,\"exp\":1700086400000}",
+          "zeotap_consent_tcf": "garbage"
+        }
+      }
+    },
+    {
+      "id": "load/absent",
+      "input": {
+        "namespace": "zeotap",
+        "expiryDays": 365,
+        "nowMs": 1700000000000,
+        "storage": {}
+      },
+      "expected": {
+        "result": null,
+        "storageAfter": {}
+      }
+    }
+  ]
+}

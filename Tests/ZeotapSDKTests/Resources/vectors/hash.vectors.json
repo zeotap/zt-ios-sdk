@@ -1,0 +1,498 @@
+{
+  "family": "hash",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/hash.ts",
+    "sdk/js/src/hash.test.ts"
+  ],
+  "sourceHash": "sha256:eaf29f88c8c36b13573aab07364bc3e9731b399277a6e12aeccf73c79d4d9507",
+  "generatedBy": "sdk/js/scripts/conformance/hash.gen.ts",
+  "notes": [
+    "Digests are hex lowercase over the UTF-8 encoding of the input; no Unicode normalisation is applied.",
+    "hashCaseVariants: value.trim() (ECMAScript WhiteSpace + LineTerminator set) then toLowerCase()/toUpperCase() with full Unicode case mapping, then hash.",
+    "MD5 is never produced client-side."
+  ],
+  "cases": [
+    {
+      "id": "digest/sha256/abc",
+      "description": "RFC test string",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "abc"
+      },
+      "expected": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    },
+    {
+      "id": "digest/sha1/abc",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "abc"
+      },
+      "expected": "a9993e364706816aba3e25717850c26c9cd0d89d"
+    },
+    {
+      "id": "caseVariants/abc",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "abc"
+      },
+      "expected": {
+        "sha256_lowercase": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+        "sha256_uppercase": "b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78",
+        "sha1_lowercase": "a9993e364706816aba3e25717850c26c9cd0d89d",
+        "sha1_uppercase": "3c01bdbb26f358bab27f267924aa2c9a03fcfdb8"
+      }
+    },
+    {
+      "id": "digest/sha256/empty",
+      "description": "empty string hashes too",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": ""
+      },
+      "expected": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "digest/sha1/empty",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": ""
+      },
+      "expected": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+    },
+    {
+      "id": "caseVariants/empty",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": ""
+      },
+      "expected": {
+        "sha256_lowercase": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha256_uppercase": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha1_lowercase": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+        "sha1_uppercase": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+      }
+    },
+    {
+      "id": "digest/sha256/email-mixed-case",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "User@Example.COM"
+      },
+      "expected": "857296a3c8a811821100e4ee4c0e5dd7b1f3b6d25687c32bdc7b25de9f2b4080"
+    },
+    {
+      "id": "digest/sha1/email-mixed-case",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "User@Example.COM"
+      },
+      "expected": "0cc6466eafc7915449a077af7737c3c40306dc98"
+    },
+    {
+      "id": "caseVariants/email-mixed-case",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "User@Example.COM"
+      },
+      "expected": {
+        "sha256_lowercase": "b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514",
+        "sha256_uppercase": "c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49",
+        "sha1_lowercase": "63a710569261a24b3766275b7000ce8d7b32e2f7",
+        "sha1_uppercase": "31dfe4ea5fea6d1a07549d9e2123cf4a552349b7"
+      }
+    },
+    {
+      "id": "digest/sha256/email-padded",
+      "description": "trimmed before casing",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "  User@Example.COM  "
+      },
+      "expected": "ff32222e338613841fd0dfc54393687ab49c8221595d66d3fc48fabc6d0208ff"
+    },
+    {
+      "id": "digest/sha1/email-padded",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "  User@Example.COM  "
+      },
+      "expected": "66ad3062f43da31a5182aad97f7f9a0a20ace70e"
+    },
+    {
+      "id": "caseVariants/email-padded",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "  User@Example.COM  "
+      },
+      "expected": {
+        "sha256_lowercase": "b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514",
+        "sha256_uppercase": "c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49",
+        "sha1_lowercase": "63a710569261a24b3766275b7000ce8d7b32e2f7",
+        "sha1_uppercase": "31dfe4ea5fea6d1a07549d9e2123cf4a552349b7"
+      }
+    },
+    {
+      "id": "digest/sha256/email-plus-tag",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "first.last+tag@example.com"
+      },
+      "expected": "00a8ed6a6cfc7ef2da7516e9a728bf88f3d1dbdcd7c75dd6ef608068ff6d0f69"
+    },
+    {
+      "id": "digest/sha1/email-plus-tag",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "first.last+tag@example.com"
+      },
+      "expected": "ca36e546cd69677ef0dc30c43ea70774425edbf1"
+    },
+    {
+      "id": "caseVariants/email-plus-tag",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "first.last+tag@example.com"
+      },
+      "expected": {
+        "sha256_lowercase": "00a8ed6a6cfc7ef2da7516e9a728bf88f3d1dbdcd7c75dd6ef608068ff6d0f69",
+        "sha256_uppercase": "839f116edac1a8fe5f36ecf79abddc3acdfbe93abe965ba4b69c3241534ea44d",
+        "sha1_lowercase": "ca36e546cd69677ef0dc30c43ea70774425edbf1",
+        "sha1_uppercase": "1b3938bd18ad3715c12b662f1c4ee2c9882cb60b"
+      }
+    },
+    {
+      "id": "digest/sha256/non-ascii-latin",
+      "description": "UTF-8 bytes, not Latin-1",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "jürgen@exämple.de"
+      },
+      "expected": "ade92ed8322c4edc818c46ec81985bfad9c58fb9443f8f108ddc0edee53ea96f"
+    },
+    {
+      "id": "digest/sha1/non-ascii-latin",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "jürgen@exämple.de"
+      },
+      "expected": "419f5bc042bb4ec37a0b992f9cb4abafd949aee4"
+    },
+    {
+      "id": "caseVariants/non-ascii-latin",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "jürgen@exämple.de"
+      },
+      "expected": {
+        "sha256_lowercase": "ade92ed8322c4edc818c46ec81985bfad9c58fb9443f8f108ddc0edee53ea96f",
+        "sha256_uppercase": "ef46569a46569a3342b2257cb3ccb01358f67c0a9e95c33b8661af13ae68b330",
+        "sha1_lowercase": "419f5bc042bb4ec37a0b992f9cb4abafd949aee4",
+        "sha1_uppercase": "ba2d8c35656a36a01e857c90a202125dec8bb94a"
+      }
+    },
+    {
+      "id": "digest/sha256/emoji",
+      "description": "4-byte UTF-8 sequence",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "🙂@example.io"
+      },
+      "expected": "8cba8bd96d9d3d7d66ac840e127e5e405fcd1089b1a8e55ea36bbeb6a15018ca"
+    },
+    {
+      "id": "digest/sha1/emoji",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "🙂@example.io"
+      },
+      "expected": "517a2d313f901964a9e9d1f10b850e6edc9848d4"
+    },
+    {
+      "id": "caseVariants/emoji",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "🙂@example.io"
+      },
+      "expected": {
+        "sha256_lowercase": "8cba8bd96d9d3d7d66ac840e127e5e405fcd1089b1a8e55ea36bbeb6a15018ca",
+        "sha256_uppercase": "be2586ac5d1110153e2a9cc83fe74a221fcd726e2e6535c077eb75180d76ed95",
+        "sha1_lowercase": "517a2d313f901964a9e9d1f10b850e6edc9848d4",
+        "sha1_uppercase": "9a1e233f11af6bfca771fa7aab04f1231474e2ed"
+      }
+    },
+    {
+      "id": "digest/sha256/nfc-e-acute",
+      "description": "U+00E9 — NOT normalised",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "é"
+      },
+      "expected": "4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c"
+    },
+    {
+      "id": "digest/sha1/nfc-e-acute",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "é"
+      },
+      "expected": "bf15be717ac1b080b4f1c456692825891ff5073d"
+    },
+    {
+      "id": "caseVariants/nfc-e-acute",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "é"
+      },
+      "expected": {
+        "sha256_lowercase": "4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c",
+        "sha256_uppercase": "a755f65d4e5201d92b6f264d1508ea0bec9913dd7b20a96ebde25de3cda84a84",
+        "sha1_lowercase": "bf15be717ac1b080b4f1c456692825891ff5073d",
+        "sha1_uppercase": "0e4f7e8798e6fc098688555156142c3551da978c"
+      }
+    },
+    {
+      "id": "digest/sha256/nfd-e-acute",
+      "description": "e + U+0301 — must differ from nfc-e-acute",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "é"
+      },
+      "expected": "bf12767b0f2a56b2190075bae8169f656e3ce8d6357d4aff184bc6c7ea48f9f6"
+    },
+    {
+      "id": "digest/sha1/nfd-e-acute",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "é"
+      },
+      "expected": "7e3fbcf1b6a69221cd8eef7442ef3b51a253bb49"
+    },
+    {
+      "id": "caseVariants/nfd-e-acute",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "é"
+      },
+      "expected": {
+        "sha256_lowercase": "bf12767b0f2a56b2190075bae8169f656e3ce8d6357d4aff184bc6c7ea48f9f6",
+        "sha256_uppercase": "ef0a931437dd85e4b2e95c16738b76b3175149e1d4b0281ec15e955fa7c41b37",
+        "sha1_lowercase": "7e3fbcf1b6a69221cd8eef7442ef3b51a253bb49",
+        "sha1_uppercase": "a033f315c09e874ff755fa33327d614d6d091372"
+      }
+    },
+    {
+      "id": "digest/sha256/german-sharp-s",
+      "description": "toUpperCase() expands ß to SS",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "straße@example.de"
+      },
+      "expected": "7281afd3f5258ca191a9347070596d1b23a3e58e8f2f0006c165750bd98723aa"
+    },
+    {
+      "id": "digest/sha1/german-sharp-s",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "straße@example.de"
+      },
+      "expected": "d97513cb79ae096c4a527774ff9020d5721e3d41"
+    },
+    {
+      "id": "caseVariants/german-sharp-s",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "straße@example.de"
+      },
+      "expected": {
+        "sha256_lowercase": "7281afd3f5258ca191a9347070596d1b23a3e58e8f2f0006c165750bd98723aa",
+        "sha256_uppercase": "fd3cb47d5c6af18920db606881aedb3c1f28684c82e6eab0fe49bfcf304aa8ba",
+        "sha1_lowercase": "d97513cb79ae096c4a527774ff9020d5721e3d41",
+        "sha1_uppercase": "4c7c02ad68bd8bc5001090f4e96fd21599974622"
+      }
+    },
+    {
+      "id": "digest/sha256/turkish-dotted-i",
+      "description": "toLowerCase() of İ yields i + U+0307",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "İstanbul@example.com"
+      },
+      "expected": "59c70cd50e83fae556ec7dcdf63947eb3e482d95c226fa1686cd823318717c77"
+    },
+    {
+      "id": "digest/sha1/turkish-dotted-i",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "İstanbul@example.com"
+      },
+      "expected": "6f6210c06de2c4a958abd23ce419104aae340d02"
+    },
+    {
+      "id": "caseVariants/turkish-dotted-i",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "İstanbul@example.com"
+      },
+      "expected": {
+        "sha256_lowercase": "21b3d4ad954ffe193659bcdcff92053ab646244b3898969a09265d00b2af7ba4",
+        "sha256_uppercase": "352dc140bdbbe53752eff61bd310e6f756d564493b75f7319e9a2c388bc89c52",
+        "sha1_lowercase": "9eea34fea67f1747d5e1cc023be5502d2a29ef85",
+        "sha1_uppercase": "63c47dec003057c7ba730fde578afcfa274e3ca9"
+      }
+    },
+    {
+      "id": "digest/sha256/nbsp-padded",
+      "description": "NBSP is trimmed by JS trim()",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": " User@Example.COM "
+      },
+      "expected": "159dded29ab3fb2024640f08ad49974e79a27697daf550c3c06fd9490bacbaf3"
+    },
+    {
+      "id": "digest/sha1/nbsp-padded",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": " User@Example.COM "
+      },
+      "expected": "af0f66b394655b7630c78689e328626c806da0cf"
+    },
+    {
+      "id": "caseVariants/nbsp-padded",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": " User@Example.COM "
+      },
+      "expected": {
+        "sha256_lowercase": "b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514",
+        "sha256_uppercase": "c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49",
+        "sha1_lowercase": "63a710569261a24b3766275b7000ce8d7b32e2f7",
+        "sha1_uppercase": "31dfe4ea5fea6d1a07549d9e2123cf4a552349b7"
+      }
+    },
+    {
+      "id": "digest/sha256/long-1000",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-256",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3"
+    },
+    {
+      "id": "digest/sha1/long-1000",
+      "input": {
+        "op": "digestHex",
+        "algorithm": "SHA-1",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": "291e9a6c66994949b57ba5e650361e98fc36b1ba"
+    },
+    {
+      "id": "caseVariants/long-1000",
+      "description": "trim, then lower/upper BEFORE hashing; key order is contractual for byte-compare runners",
+      "input": {
+        "op": "hashCaseVariants",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "expected": {
+        "sha256_lowercase": "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3",
+        "sha256_uppercase": "c2e686823489ced2017f6059b8b239318b6364f6dcd835d0a519105a1eadd6e4",
+        "sha1_lowercase": "291e9a6c66994949b57ba5e650361e98fc36b1ba",
+        "sha1_uppercase": "3ae3644d6777a1f56a1defeabc74af9c4b313e49"
+      }
+    },
+    {
+      "id": "digits/9999999999",
+      "input": {
+        "op": "hashDigits",
+        "value": "9999999999"
+      },
+      "expected": {
+        "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+        "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+      }
+    },
+    {
+      "id": "digits/919999999999",
+      "input": {
+        "op": "hashDigits",
+        "value": "919999999999"
+      },
+      "expected": {
+        "sha256": "5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5",
+        "sha1": "a983675bd344456da24fde5fc32c12e15ae17157"
+      }
+    },
+    {
+      "id": "digits/empty",
+      "input": {
+        "op": "hashDigits",
+        "value": ""
+      },
+      "expected": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+      }
+    },
+    {
+      "id": "digits/0",
+      "input": {
+        "op": "hashDigits",
+        "value": "0"
+      },
+      "expected": {
+        "sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+        "sha1": "b6589fc6ab0dc82cf12099d1c2d40ab994e8410c"
+      }
+    },
+    {
+      "id": "digits/0001234567",
+      "input": {
+        "op": "hashDigits",
+        "value": "0001234567"
+      },
+      "expected": {
+        "sha256": "318221a629a9e10068ee3cdefeaffc7432d51977691f89804eacfa5a587c4d14",
+        "sha1": "2323078969443c45495d03a39d4b0f09badcc049"
+      }
+    }
+  ]
+}

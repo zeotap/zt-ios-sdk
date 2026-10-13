@@ -1,0 +1,56 @@
+{
+  "family": "storage-keys",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/identity.ts",
+    "sdk/js/src/user-identities.ts",
+    "sdk/js/src/consent-persistence.ts"
+  ],
+  "sourceHash": "sha256:0213a13cf3b4caa366f89667c63b31e138fa6402c8063bc0481a613b8ee37c4d",
+  "generatedBy": "sdk/js/scripts/conformance/storage-keys.gen.ts",
+  "notes": [
+    "Browser-only keys NOT asserted: {ns}_cookie_sync_ts_{writeKey} (localStorage), {ns}_fp_id (server-set HttpOnly cookie), __tld_test__ probes.",
+    "Mobile-only keys added by the native SDKs: {ns}_app_version, {ns}_app_build (lifecycle events)."
+  ],
+  "cases": [
+    {
+      "id": "zeotap",
+      "input": {
+        "namespace": "zeotap"
+      },
+      "expected": {
+        "anonymousId": "zeotap_anonymous_id",
+        "userId": "zeotap_user_id",
+        "userIdentities": "zeotap_user_identities",
+        "consent": "zeotap_consent",
+        "consentTcf": "zeotap_consent_tcf"
+      }
+    },
+    {
+      "id": "signalsmith",
+      "input": {
+        "namespace": "signalsmith"
+      },
+      "expected": {
+        "anonymousId": "signalsmith_anonymous_id",
+        "userId": "signalsmith_user_id",
+        "userIdentities": "signalsmith_user_identities",
+        "consent": "signalsmith_consent",
+        "consentTcf": "signalsmith_consent_tcf"
+      }
+    },
+    {
+      "id": "acme_1",
+      "input": {
+        "namespace": "acme_1"
+      },
+      "expected": {
+        "anonymousId": "acme_1_anonymous_id",
+        "userId": "acme_1_user_id",
+        "userIdentities": "acme_1_user_identities",
+        "consent": "acme_1_consent",
+        "consentTcf": "acme_1_consent_tcf"
+      }
+    }
+  ]
+}

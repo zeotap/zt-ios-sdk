@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/hash.schema.json",
+  "title": "hash conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "hash"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "op",
+              "value"
+            ],
+            "properties": {
+              "op": {
+                "enum": [
+                  "digestHex",
+                  "hashCaseVariants",
+                  "hashDigits"
+                ]
+              },
+              "algorithm": {
+                "enum": [
+                  "SHA-256",
+                  "SHA-1"
+                ]
+              },
+              "value": {
+                "type": "string"
+              }
+            }
+          },
+          "expected": {
+            "oneOf": [
+              {
+                "type": "string",
+                "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]+$"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

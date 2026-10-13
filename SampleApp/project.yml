@@ -1,0 +1,62 @@
+# XcodeGen spec for the sample / test-host app. The .xcodeproj is NOT committed: CI (and anyone
+# with Xcode) runs `xcodegen generate` here. The app references the SDK package by local path.
+name: ZeotapSample
+options:
+  bundleIdPrefix: com.zeotap.sdk
+  deploymentTarget:
+    iOS: "14.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+packages:
+  ZeotapSDK:
+    path: ..
+targets:
+  ZeotapSample:
+    type: application
+    platform: iOS
+    sources:
+      - path: ZeotapSample
+    dependencies:
+      - package: ZeotapSDK
+        product: ZeotapSDK
+      - package: ZeotapSDK
+        product: ZeotapSDKAdSupport
+    info:
+      path: ZeotapSample/Info.plist
+      properties:
+        CFBundleDisplayName: Zeotap SDK Sample
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        NSUserTrackingUsageDescription: "The sample app can attach the advertising identifier when you enable it in Settings."
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zeotap.sdk.sample
+        SWIFT_VERSION: "5.9"
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1,2"
+  ZeotapSampleUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: ZeotapSampleUITests
+    dependencies:
+      - target: ZeotapSample
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zeotap.sdk.sample.uitests
+        TEST_TARGET_NAME: ZeotapSample
+schemes:
+  ZeotapSample:
+    build:
+      targets:
+        ZeotapSample: all
+        ZeotapSampleUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ZeotapSampleUITests

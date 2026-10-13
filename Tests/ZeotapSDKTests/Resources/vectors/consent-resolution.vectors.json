@@ -1,0 +1,816 @@
+{
+  "family": "consent-resolution",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/consent.ts",
+    "sdk/js/src/consent-state.ts",
+    "sdk/js/src/consent-state.test.ts",
+    "sdk/js/src/consent.test.ts"
+  ],
+  "sourceHash": "sha256:c7bf1cc9b57177fe93353c3c88f6d02a6b06a724243b2fea6042767554b97ffb",
+  "generatedBy": "sdk/js/scripts/conformance/consent-resolution.gen.ts",
+  "notes": [
+    "setConsent/resolveDefault take `ts` from the clock (Date.now) — `atMs` is the pinned clock value; offer() carries its own ts.",
+    "expected.afterEachStep[i].accepted is present only for offer steps.",
+    "getConsent is the host-facing ConsentInput that rides on context.consent: input if present, else {tcfString} if present, else null."
+  ],
+  "cases": [
+    {
+      "id": "manual-only",
+      "input": {
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            },
+            "atMs": 1700000000000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "manual-replaces-manual",
+      "description": "each accepted resolution replaces the previous entirely (no merging)",
+      "input": {
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "tcfString": "CQ.first"
+            },
+            "atMs": 1700000000000
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            },
+            "atMs": 1700000000001
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.first",
+            "getConsent": {
+              "tcfString": "CQ.first"
+            },
+            "listenerCalls": 1
+          },
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000001,
+            "getConsent": {
+              "analytics": false
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "default-then-manual",
+      "input": {
+        "steps": [
+          {
+            "op": "resolveDefault",
+            "granted": true,
+            "atMs": 1700000000000
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            },
+            "atMs": 1700000000005
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "default",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000000,
+            "getConsent": null,
+            "listenerCalls": 1
+          },
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000005,
+            "getConsent": {
+              "analytics": false
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "manual-then-default-noop",
+      "description": "resolveDefault is a no-op once resolved",
+      "input": {
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            },
+            "atMs": 1700000000000
+          },
+          {
+            "op": "resolveDefault",
+            "granted": false,
+            "atMs": 1700000000005
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          },
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "storage-then-cmp",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "storage",
+            "ts": 1699999999000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "cmp",
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "ts": 1700000000000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "storage",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1699999999000,
+            "getConsent": null,
+            "listenerCalls": 1
+          },
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.cmp"
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "cmp-then-storage-rejected",
+      "description": "a weaker source never overwrites a stronger one",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "cmp",
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "ts": 1700000000000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "storage",
+            "ts": 1700000000001
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.cmp"
+            },
+            "listenerCalls": 1
+          },
+          {
+            "accepted": false,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.cmp"
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "cmp-re-resolves-cmp",
+      "description": "same-source re-resolution accepted (CMP consent change mid-session)",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "cmp",
+            "tcfString": "CQ.a",
+            "gdprApplies": true,
+            "ts": 1700000000000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "cmp",
+            "tcfString": "CQ.b",
+            "gdprApplies": true,
+            "ts": 1700000000001
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.a",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.a"
+            },
+            "listenerCalls": 1
+          },
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000001,
+            "tcfString": "CQ.b",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.b"
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "manual-beats-cmp",
+      "input": {
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            },
+            "atMs": 1700000000000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "cmp",
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "ts": 1700000000001
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          },
+          {
+            "accepted": false,
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "cmp-then-manual",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "cmp",
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "ts": 1700000000000
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "advertising": true
+            },
+            "atMs": 1700000000001
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.cmp"
+            },
+            "listenerCalls": 1
+          },
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000001,
+            "getConsent": {
+              "advertising": true
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "default-then-storage-accepted",
+      "input": {
+        "steps": [
+          {
+            "op": "resolveDefault",
+            "granted": false,
+            "atMs": 1700000000000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "storage",
+            "ts": 1699999995000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "default",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": null,
+            "listenerCalls": 1
+          },
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "storage",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1699999995000,
+            "getConsent": null,
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "storage-then-default-rejected",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "storage",
+            "ts": 1699999995000
+          },
+          {
+            "op": "offer",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "source": "default",
+            "ts": 1700000000000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "storage",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1699999995000,
+            "getConsent": null,
+            "listenerCalls": 1
+          },
+          {
+            "accepted": false,
+            "resolved": true,
+            "source": "storage",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1699999995000,
+            "getConsent": null,
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "clear-keeps-listeners",
+      "description": "after clear(): unresolved, getConsent null, but the listener still fires on the next resolution",
+      "input": {
+        "steps": [
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": true
+            },
+            "atMs": 1700000000000
+          },
+          {
+            "op": "clear"
+          },
+          {
+            "op": "setConsent",
+            "input": {
+              "analytics": false
+            },
+            "atMs": 1700000000002
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": false
+            },
+            "ts": 1700000000000,
+            "getConsent": {
+              "analytics": true
+            },
+            "listenerCalls": 1
+          },
+          {
+            "resolved": false,
+            "getConsent": null,
+            "listenerCalls": 1
+          },
+          {
+            "resolved": true,
+            "source": "manual",
+            "signals": {
+              "track": false,
+              "identify": false,
+              "cookieSync": false
+            },
+            "ts": 1700000000002,
+            "getConsent": {
+              "analytics": false
+            },
+            "listenerCalls": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "cmp-surfaces-tcfstring-as-consent",
+      "description": "CMP resolution has no host input → getConsent() is {tcfString} so the TC string rides on events",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "cmp",
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "ts": 1700000000000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000000,
+            "tcfString": "CQ.cmp",
+            "gdprApplies": true,
+            "getConsent": {
+              "tcfString": "CQ.cmp"
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "cmp-gdpr-not-applicable-no-tcstring",
+      "description": "gdprApplies=false resolution carries no TC string → getConsent() null",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "cmp",
+            "gdprApplies": false,
+            "ts": 1700000000000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "cmp",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1700000000000,
+            "gdprApplies": false,
+            "getConsent": null,
+            "listenerCalls": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "storage-with-input",
+      "description": "hydrated record carries its original input",
+      "input": {
+        "steps": [
+          {
+            "op": "offer",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "source": "storage",
+            "input": {
+              "advertising": true
+            },
+            "ts": 1699913600000
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "accepted": true,
+            "resolved": true,
+            "source": "storage",
+            "signals": {
+              "track": true,
+              "identify": true,
+              "cookieSync": true
+            },
+            "ts": 1699913600000,
+            "getConsent": {
+              "advertising": true
+            },
+            "listenerCalls": 1
+          }
+        ]
+      }
+    }
+  ]
+}

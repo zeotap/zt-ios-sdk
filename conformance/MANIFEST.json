@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "sdkJsVersion": "0.1.0",
+  "sdkJsLibraryName": "@zeotap/browser-sdk",
+  "totalCases": 229,
+  "files": {
+    "vectors/cellno.vectors.json": {
+      "family": "cellno",
+      "sha256": "5eaa51f82b8097e2338bf2ba8949872e81ba9833e79eaf9589de3d6b3d1612d4",
+      "sourceHash": "sha256:eaf29f88c8c36b13573aab07364bc3e9731b399277a6e12aeccf73c79d4d9507",
+      "cases": 19
+    },
+    "vectors/consent-persistence.vectors.json": {
+      "family": "consent-persistence",
+      "sha256": "00d857a2e359f4dde09a17609ce0fec19afb05478b526291b60fb471792bb0de",
+      "sourceHash": "sha256:d33a0eb46ea083813d3c3c43ff6a54a3c37f9ad806648ec8a623029364779186",
+      "cases": 22
+    },
+    "vectors/consent-resolution.vectors.json": {
+      "family": "consent-resolution",
+      "sha256": "56d7d83e73abac52f86b324a09a951d0a3f8e99d81014627d5ed8eccaf0a1745",
+      "sourceHash": "sha256:c7bf1cc9b57177fe93353c3c88f6d02a6b06a724243b2fea6042767554b97ffb",
+      "cases": 15
+    },
+    "vectors/consent-signals.vectors.json": {
+      "family": "consent-signals",
+      "sha256": "c5f1d56ef14757c67503b5bf8a99616a7abc34ba060c2382b01bfd5af2759b0f",
+      "sourceHash": "sha256:e4307cbc88adc8a6cda1014d1b94a7bd4f7f581ff925cf6d734c8fc86064701c",
+      "cases": 20
+    },
+    "vectors/gating.vectors.json": {
+      "family": "gating",
+      "sha256": "7f3afc43a1e4f6e4518c8f4488ead0d6fcdd7a4f33870db4f505e1388de4fe60",
+      "sourceHash": "sha256:592b0d7d71d4cb9d6731052ed1cff55e41de43e430c1154519c2abf62d7fbc25",
+      "cases": 25
+    },
+    "vectors/hash.vectors.json": {
+      "family": "hash",
+      "sha256": "39c64cf6b4a63e282e5a40b5bea3b276eeddb1468fb99838a826dc264e42eee4",
+      "sourceHash": "sha256:eaf29f88c8c36b13573aab07364bc3e9731b399277a6e12aeccf73c79d4d9507",
+      "cases": 44
+    },
+    "vectors/identities.vectors.json": {
+      "family": "identities",
+      "sha256": "c83b66a7b6e099e7c12f95785b58ccbed94091c072498267904cc76078942608",
+      "sourceHash": "sha256:f758c985c42282e3726ec1e95cda8c965ade18148f0e6ffd272cd2cffdf31e87",
+      "cases": 20
+    },
+    "vectors/payload.vectors.json": {
+      "family": "payload",
+      "sha256": "b3befc1715d4510f4e269d1cd2b1d7f18dc5fc0319531f131e0c9a345d491290",
+      "sourceHash": "sha256:26fdfb39a50a9c482b499edf90c1b508c1042f04efac13aab5a5c8821dde0541",
+      "cases": 23
+    },
+    "vectors/storage-keys.vectors.json": {
+      "family": "storage-keys",
+      "sha256": "75c6c9a9902a82f780b9b255896330a0c0b735e07cd3f317563ef1c3a8aca076",
+      "sourceHash": "sha256:0213a13cf3b4caa366f89667c63b31e138fa6402c8063bc0481a613b8ee37c4d",
+      "cases": 3
+    },
+    "vectors/tcf.vectors.json": {
+      "family": "tcf",
+      "sha256": "2a745ba90ffe23bdf46bfd8e87f0dbd11d8307bca07fd9e84fb84106ddf41779",
+      "sourceHash": "sha256:bc0927eaf8df24edb3ec7126e9527f7a15d3ec2c1139efb54a72a5f45786198c",
+      "cases": 19
+    },
+    "vectors/transport.vectors.json": {
+      "family": "transport",
+      "sha256": "f62af8e5f51da775816e913ee205a017e873a7bf057ff32fba681eebd31fc4df",
+      "sourceHash": "sha256:9208679f657dc0e118c8f6e06d929ac5c382b77a47556d4237eceb73daab5e25",
+      "cases": 19
+    }
+  }
+}

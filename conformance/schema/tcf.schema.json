@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://signalsmith.dev/sdk/conformance/tcf.schema.json",
+  "title": "tcf conformance vectors",
+  "type": "object",
+  "properties": {
+    "family": {
+      "const": "tcf"
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "object",
+            "required": [
+              "tcData",
+              "options",
+              "iabtcf"
+            ],
+            "properties": {
+              "tcData": {
+                "type": "object"
+              },
+              "options": {
+                "type": "object"
+              },
+              "iabtcf": {
+                "type": "object",
+                "required": [
+                  "IABTCF_PurposeConsents",
+                  "IABTCF_VendorConsents"
+                ],
+                "properties": {
+                  "IABTCF_PurposeConsents": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[01]*$"
+                  },
+                  "IABTCF_VendorConsents": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[01]*$"
+                  }
+                }
+              }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": [
+              "track",
+              "identify",
+              "cookieSync"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "track": {
+                "type": "boolean"
+              },
+              "identify": {
+                "type": "boolean"
+              },
+              "cookieSync": {
+                "type": "boolean"
+              }
+            }
+          },
+          "expectedFromBits": {
+            "type": "object",
+            "required": [
+              "track",
+              "identify",
+              "cookieSync"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "track": {
+                "type": "boolean"
+              },
+              "identify": {
+                "type": "boolean"
+              },
+              "cookieSync": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

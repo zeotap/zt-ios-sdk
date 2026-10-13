@@ -1,0 +1,880 @@
+{
+  "family": "identities",
+  "version": 1,
+  "sources": [
+    "sdk/js/src/user-identities.ts",
+    "sdk/js/src/hash.ts",
+    "sdk/js/src/user-identities.test.ts"
+  ],
+  "sourceHash": "sha256:f758c985c42282e3726ec1e95cda8c965ade18148f0e6ffd272cd2cffdf31e87",
+  "generatedBy": "sdk/js/scripts/conformance/identities.gen.ts",
+  "notes": [
+    "stored = what attaches to context.identities (null when empty). persistedJson = exact string under {ns}_user_identities (null = key absent).",
+    "Raw path: email/loginid → {sha256_lowercase, sha256_uppercase, sha1_lowercase, sha1_uppercase}; cellno → {sha256, sha1} (+ cellno_e164 when a cc is known); fpuid/custom raw; empty/undefined skipped; cellno_cc consumed.",
+    "Hashed path regexes: ^(email|loginid)_(sha256|sha1|md5)_(lowercase|uppercase)$ and ^(cellno|cellno_e164|cellno_with_country_code|cellno_without_country_code)_(sha256|sha1|md5)$; anything else passes through raw.",
+    "The web insecure-context drop (no SubtleCrypto) is deliberately not vectorised: native crypto is always available."
+  ],
+  "cases": [
+    {
+      "id": "raw/email",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "  User@Example.COM "
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514",
+                "sha256_uppercase": "c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49",
+                "sha1_lowercase": "63a710569261a24b3766275b7000ce8d7b32e2f7",
+                "sha1_uppercase": "31dfe4ea5fea6d1a07549d9e2123cf4a552349b7"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514\",\"sha256_uppercase\":\"c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49\",\"sha1_lowercase\":\"63a710569261a24b3766275b7000ce8d7b32e2f7\",\"sha1_uppercase\":\"31dfe4ea5fea6d1a07549d9e2123cf4a552349b7\"}}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "sha256_lowercase": "b4c9a289323b21a01c3e940f150eb9b8c542587f1abfd8f0e1cc1ffc5e475514",
+            "sha256_uppercase": "c5ac93927855fbdde05d3ce09b70ccdd9d4e24ede68b98159632cd3b2cca3f49",
+            "sha1_lowercase": "63a710569261a24b3766275b7000ce8d7b32e2f7",
+            "sha1_uppercase": "31dfe4ea5fea6d1a07549d9e2123cf4a552349b7"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/loginid",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "loginid": "Login.Id-42"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "loginid": {
+                "sha256_lowercase": "5572eb83681e432c49a232826539bae11af08a9c08e63de9c61a63c7b60d9f89",
+                "sha256_uppercase": "3cf3316c61c45b9b384212d51eadf6971c435ca9dd72541cf996de9c61917d40",
+                "sha1_lowercase": "d3d414d7c8980cb022c634a23cfcba31bcd0e1c4",
+                "sha1_uppercase": "f4ff6bf4553f7c15d2b4c24277f3171ba1fbaa84"
+              }
+            },
+            "persistedJson": "{\"loginid\":{\"sha256_lowercase\":\"5572eb83681e432c49a232826539bae11af08a9c08e63de9c61a63c7b60d9f89\",\"sha256_uppercase\":\"3cf3316c61c45b9b384212d51eadf6971c435ca9dd72541cf996de9c61917d40\",\"sha1_lowercase\":\"d3d414d7c8980cb022c634a23cfcba31bcd0e1c4\",\"sha1_uppercase\":\"f4ff6bf4553f7c15d2b4c24277f3171ba1fbaa84\"}}"
+          }
+        ],
+        "reloaded": {
+          "loginid": {
+            "sha256_lowercase": "5572eb83681e432c49a232826539bae11af08a9c08e63de9c61a63c7b60d9f89",
+            "sha256_uppercase": "3cf3316c61c45b9b384212d51eadf6971c435ca9dd72541cf996de9c61917d40",
+            "sha1_lowercase": "d3d414d7c8980cb022c634a23cfcba31bcd0e1c4",
+            "sha1_uppercase": "f4ff6bf4553f7c15d2b4c24277f3171ba1fbaa84"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/cellno-space-cc",
+      "description": "'91 9999999999' → cellno (national digits) + cellno_e164 (cc+number, no '+')",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno": "91 9999999999"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "cellno": {
+                "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+                "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+              },
+              "cellno_e164": {
+                "sha256": "5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5",
+                "sha1": "a983675bd344456da24fde5fc32c12e15ae17157"
+              }
+            },
+            "persistedJson": "{\"cellno\":{\"sha256\":\"ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c\",\"sha1\":\"8bb0b97698f489d41b6955a46383fa1f2d9001c5\"},\"cellno_e164\":{\"sha256\":\"5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5\",\"sha1\":\"a983675bd344456da24fde5fc32c12e15ae17157\"}}"
+          }
+        ],
+        "reloaded": {
+          "cellno": {
+            "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+            "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+          },
+          "cellno_e164": {
+            "sha256": "5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5",
+            "sha1": "a983675bd344456da24fde5fc32c12e15ae17157"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/cellno-plus-space-cc",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno": "+44 7700 900123"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "cellno": {
+                "sha256": "17164f7cb1909b65e812895d10d70785982ade377c79c8824dc02c0a1237674d",
+                "sha1": "181f7eb3928382401c6857b68ecce213c2e592d9"
+              },
+              "cellno_e164": {
+                "sha256": "033134b911b137918338415ee3d20a064b24773d36a3b02e8b99fdd3fcd6b4cd",
+                "sha1": "c42dcb28f1c7d4273d80541b603466415c47d094"
+              }
+            },
+            "persistedJson": "{\"cellno\":{\"sha256\":\"17164f7cb1909b65e812895d10d70785982ade377c79c8824dc02c0a1237674d\",\"sha1\":\"181f7eb3928382401c6857b68ecce213c2e592d9\"},\"cellno_e164\":{\"sha256\":\"033134b911b137918338415ee3d20a064b24773d36a3b02e8b99fdd3fcd6b4cd\",\"sha1\":\"c42dcb28f1c7d4273d80541b603466415c47d094\"}}"
+          }
+        ],
+        "reloaded": {
+          "cellno": {
+            "sha256": "17164f7cb1909b65e812895d10d70785982ade377c79c8824dc02c0a1237674d",
+            "sha1": "181f7eb3928382401c6857b68ecce213c2e592d9"
+          },
+          "cellno_e164": {
+            "sha256": "033134b911b137918338415ee3d20a064b24773d36a3b02e8b99fdd3fcd6b4cd",
+            "sha1": "c42dcb28f1c7d4273d80541b603466415c47d094"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/cellno-explicit-cc-field",
+      "description": "cellno_cc is consumed, never emitted",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno": "(999) 999-9999",
+              "cellno_cc": "1"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "cellno": {
+                "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+                "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+              },
+              "cellno_e164": {
+                "sha256": "5679fcf7ea7fa4949a55e1d6e528878818273a4e0c1cfe4ffd0d6a0c4f282f08",
+                "sha1": "f2803e293632cd343103f09bf10d1e2a357859c0"
+              }
+            },
+            "persistedJson": "{\"cellno\":{\"sha256\":\"ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c\",\"sha1\":\"8bb0b97698f489d41b6955a46383fa1f2d9001c5\"},\"cellno_e164\":{\"sha256\":\"5679fcf7ea7fa4949a55e1d6e528878818273a4e0c1cfe4ffd0d6a0c4f282f08\",\"sha1\":\"f2803e293632cd343103f09bf10d1e2a357859c0\"}}"
+          }
+        ],
+        "reloaded": {
+          "cellno": {
+            "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+            "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+          },
+          "cellno_e164": {
+            "sha256": "5679fcf7ea7fa4949a55e1d6e528878818273a4e0c1cfe4ffd0d6a0c4f282f08",
+            "sha1": "f2803e293632cd343103f09bf10d1e2a357859c0"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/cellno-no-cc",
+      "description": "no cc → no cellno_e164",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno": "9999999999"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "cellno": {
+                "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+                "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+              }
+            },
+            "persistedJson": "{\"cellno\":{\"sha256\":\"ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c\",\"sha1\":\"8bb0b97698f489d41b6955a46383fa1f2d9001c5\"}}"
+          }
+        ],
+        "reloaded": {
+          "cellno": {
+            "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+            "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+          }
+        }
+      }
+    },
+    {
+      "id": "raw/cellno-cc-field-only-ignored",
+      "description": "cellno_cc without cellno emits nothing",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno_cc": "91"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": null,
+            "persistedJson": null
+          }
+        ],
+        "reloaded": null
+      }
+    },
+    {
+      "id": "raw/cellno-no-digits-skipped",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "cellno": "abc"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": null,
+            "persistedJson": null
+          }
+        ],
+        "reloaded": null
+      }
+    },
+    {
+      "id": "raw/fpuid-and-custom-passthrough",
+      "description": "fpuid and custom keys are never hashed",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "fpuid": "fp-123",
+              "crm_id": "CRM-9"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "fpuid": "fp-123",
+              "crm_id": "CRM-9"
+            },
+            "persistedJson": "{\"fpuid\":\"fp-123\",\"crm_id\":\"CRM-9\"}"
+          }
+        ],
+        "reloaded": {
+          "fpuid": "fp-123",
+          "crm_id": "CRM-9"
+        }
+      }
+    },
+    {
+      "id": "raw/skip-empty-values",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "",
+              "fpuid": "fp-1"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "fpuid": "fp-1"
+            },
+            "persistedJson": "{\"fpuid\":\"fp-1\"}"
+          }
+        ],
+        "reloaded": {
+          "fpuid": "fp-1"
+        }
+      }
+    },
+    {
+      "id": "raw/all-keys-order",
+      "description": "output key order follows input insertion order",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "fpuid": "fp-1",
+              "email": "a@b.com",
+              "cellno": "91 9999999999",
+              "loginid": "l1",
+              "custom": "c"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "fpuid": "fp-1",
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              },
+              "cellno": {
+                "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+                "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+              },
+              "cellno_e164": {
+                "sha256": "5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5",
+                "sha1": "a983675bd344456da24fde5fc32c12e15ae17157"
+              },
+              "loginid": {
+                "sha256_lowercase": "2804bad6fe94a55f18b2b37e300919a5fd517b95aa81e95db574c0ba069a3740",
+                "sha256_uppercase": "dffe8596427fc50e8f64654a609af134d45552f18bbecef90b31135a9e7acaa0",
+                "sha1_lowercase": "39a89dd158c8e9747943b00f84be79fc33fbd405",
+                "sha1_uppercase": "52b1773e986d85ab44b6b67319708dcec8867b79"
+              },
+              "custom": "c"
+            },
+            "persistedJson": "{\"fpuid\":\"fp-1\",\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"},\"cellno\":{\"sha256\":\"ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c\",\"sha1\":\"8bb0b97698f489d41b6955a46383fa1f2d9001c5\"},\"cellno_e164\":{\"sha256\":\"5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5\",\"sha1\":\"a983675bd344456da24fde5fc32c12e15ae17157\"},\"loginid\":{\"sha256_lowercase\":\"2804bad6fe94a55f18b2b37e300919a5fd517b95aa81e95db574c0ba069a3740\",\"sha256_uppercase\":\"dffe8596427fc50e8f64654a609af134d45552f18bbecef90b31135a9e7acaa0\",\"sha1_lowercase\":\"39a89dd158c8e9747943b00f84be79fc33fbd405\",\"sha1_uppercase\":\"52b1773e986d85ab44b6b67319708dcec8867b79\"},\"custom\":\"c\"}"
+          }
+        ],
+        "reloaded": {
+          "fpuid": "fp-1",
+          "email": {
+            "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+            "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+            "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+            "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+          },
+          "cellno": {
+            "sha256": "ce3a598687c8d2e5aa6bedad20e059b4a78cca0adad7e563b07998d5cd226b8c",
+            "sha1": "8bb0b97698f489d41b6955a46383fa1f2d9001c5"
+          },
+          "cellno_e164": {
+            "sha256": "5a15bf8887c41bb21f3b33a5bf1a06064711a6495cbbd97ddb92995d5df8b1b5",
+            "sha1": "a983675bd344456da24fde5fc32c12e15ae17157"
+          },
+          "loginid": {
+            "sha256_lowercase": "2804bad6fe94a55f18b2b37e300919a5fd517b95aa81e95db574c0ba069a3740",
+            "sha256_uppercase": "dffe8596427fc50e8f64654a609af134d45552f18bbecef90b31135a9e7acaa0",
+            "sha1_lowercase": "39a89dd158c8e9747943b00f84be79fc33fbd405",
+            "sha1_uppercase": "52b1773e986d85ab44b6b67319708dcec8867b79"
+          },
+          "custom": "c"
+        }
+      }
+    },
+    {
+      "id": "merge/across-calls",
+      "description": "{...existing, ...new}: existing keys keep their position, new keys append",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "set",
+            "input": {
+              "fpuid": "fp-1"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"}}"
+          },
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              },
+              "fpuid": "fp-1"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"},\"fpuid\":\"fp-1\"}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+            "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+            "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+            "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+          },
+          "fpuid": "fp-1"
+        }
+      }
+    },
+    {
+      "id": "merge/overwrite-same-key-keeps-position",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com",
+              "fpuid": "fp-1"
+            }
+          },
+          {
+            "op": "set",
+            "input": {
+              "email": "c@d.com"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              },
+              "fpuid": "fp-1"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"},\"fpuid\":\"fp-1\"}"
+          },
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "d10560d176b4c74051325d1fb4255ecf0086a685cc8658acafe2520e6e8fd170",
+                "sha256_uppercase": "df56edc0b103efb0d42723c835d3e0399c9ba53649b12f15842b54f414be490b",
+                "sha1_lowercase": "0c5541dd11473976b72170f46f5f1ad02e06e061",
+                "sha1_uppercase": "b9180cf24d1f7bee4368eda50980a0ef24eb35b7"
+              },
+              "fpuid": "fp-1"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"d10560d176b4c74051325d1fb4255ecf0086a685cc8658acafe2520e6e8fd170\",\"sha256_uppercase\":\"df56edc0b103efb0d42723c835d3e0399c9ba53649b12f15842b54f414be490b\",\"sha1_lowercase\":\"0c5541dd11473976b72170f46f5f1ad02e06e061\",\"sha1_uppercase\":\"b9180cf24d1f7bee4368eda50980a0ef24eb35b7\"},\"fpuid\":\"fp-1\"}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "sha256_lowercase": "d10560d176b4c74051325d1fb4255ecf0086a685cc8658acafe2520e6e8fd170",
+            "sha256_uppercase": "df56edc0b103efb0d42723c835d3e0399c9ba53649b12f15842b54f414be490b",
+            "sha1_lowercase": "0c5541dd11473976b72170f46f5f1ad02e06e061",
+            "sha1_uppercase": "b9180cf24d1f7bee4368eda50980a0ef24eb35b7"
+          },
+          "fpuid": "fp-1"
+        }
+      }
+    },
+    {
+      "id": "hashed/regroup-flat-keys",
+      "description": "pre-hashed legacy flat keys regroup into {base: {algo[_casing]: hex}}; md5 accepted as pass-through",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "hashed": true,
+            "input": {
+              "email_sha256_lowercase": "e256l",
+              "email_sha1_uppercase": "e1u",
+              "email_md5_uppercase": "emd5u",
+              "loginid_sha256_uppercase": "l256u",
+              "cellno_sha256": "c256",
+              "cellno_e164_sha256": "ce256",
+              "cellno_with_country_code_sha1": "cwcc1",
+              "cellno_without_country_code_md5": "cwocc5",
+              "fpuid": "fp-1",
+              "custom_id": "raw-custom"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "e256l",
+                "sha1_uppercase": "e1u",
+                "md5_uppercase": "emd5u"
+              },
+              "loginid": {
+                "sha256_uppercase": "l256u"
+              },
+              "cellno": {
+                "sha256": "c256"
+              },
+              "cellno_e164": {
+                "sha256": "ce256"
+              },
+              "cellno_with_country_code": {
+                "sha1": "cwcc1"
+              },
+              "cellno_without_country_code": {
+                "md5": "cwocc5"
+              },
+              "fpuid": "fp-1",
+              "custom_id": "raw-custom"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"e256l\",\"sha1_uppercase\":\"e1u\",\"md5_uppercase\":\"emd5u\"},\"loginid\":{\"sha256_uppercase\":\"l256u\"},\"cellno\":{\"sha256\":\"c256\"},\"cellno_e164\":{\"sha256\":\"ce256\"},\"cellno_with_country_code\":{\"sha1\":\"cwcc1\"},\"cellno_without_country_code\":{\"md5\":\"cwocc5\"},\"fpuid\":\"fp-1\",\"custom_id\":\"raw-custom\"}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "sha256_lowercase": "e256l",
+            "sha1_uppercase": "e1u",
+            "md5_uppercase": "emd5u"
+          },
+          "loginid": {
+            "sha256_uppercase": "l256u"
+          },
+          "cellno": {
+            "sha256": "c256"
+          },
+          "cellno_e164": {
+            "sha256": "ce256"
+          },
+          "cellno_with_country_code": {
+            "sha1": "cwcc1"
+          },
+          "cellno_without_country_code": {
+            "md5": "cwocc5"
+          },
+          "fpuid": "fp-1",
+          "custom_id": "raw-custom"
+        }
+      }
+    },
+    {
+      "id": "hashed/unmatched-raw-key-passes-through",
+      "description": "in hashed mode a key that matches neither regex is stored RAW (email here) — callers must not pass raw PII with hashed:true",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "hashed": true,
+            "input": {
+              "email": "a@b.com"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": "a@b.com"
+            },
+            "persistedJson": "{\"email\":\"a@b.com\"}"
+          }
+        ],
+        "reloaded": {
+          "email": "a@b.com"
+        }
+      }
+    },
+    {
+      "id": "hashed/merge-into-raw-group",
+      "description": "a hashed variant merges into an existing group for the same base key",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "set",
+            "hashed": true,
+            "input": {
+              "email_md5_lowercase": "emd5l"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"}}"
+          },
+          {
+            "stored": {
+              "email": {
+                "md5_lowercase": "emd5l"
+              }
+            },
+            "persistedJson": "{\"email\":{\"md5_lowercase\":\"emd5l\"}}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "md5_lowercase": "emd5l"
+          }
+        }
+      }
+    },
+    {
+      "id": "unset/specific-keys",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com",
+              "fpuid": "fp-1",
+              "crm": "x"
+            }
+          },
+          {
+            "op": "unset",
+            "keys": [
+              "fpuid",
+              "missing"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              },
+              "fpuid": "fp-1",
+              "crm": "x"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"},\"fpuid\":\"fp-1\",\"crm\":\"x\"}"
+          },
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              },
+              "crm": "x"
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"},\"crm\":\"x\"}"
+          }
+        ],
+        "reloaded": {
+          "email": {
+            "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+            "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+            "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+            "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+          },
+          "crm": "x"
+        }
+      }
+    },
+    {
+      "id": "unset/all-removes-storage-key",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "unset"
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"}}"
+          },
+          {
+            "stored": null,
+            "persistedJson": null
+          }
+        ],
+        "reloaded": null
+      }
+    },
+    {
+      "id": "unset/empty-array-removes-all",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "unset",
+            "keys": []
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"}}"
+          },
+          {
+            "stored": null,
+            "persistedJson": null
+          }
+        ],
+        "reloaded": null
+      }
+    },
+    {
+      "id": "clear",
+      "input": {
+        "namespace": "zeotap",
+        "steps": [
+          {
+            "op": "set",
+            "input": {
+              "email": "a@b.com"
+            }
+          },
+          {
+            "op": "clear"
+          }
+        ]
+      },
+      "expected": {
+        "afterEachStep": [
+          {
+            "stored": {
+              "email": {
+                "sha256_lowercase": "fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf",
+                "sha256_uppercase": "fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001",
+                "sha1_lowercase": "1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22",
+                "sha1_uppercase": "63a007a644452db5e97621dfe42904a57ae2b183"
+              }
+            },
+            "persistedJson": "{\"email\":{\"sha256_lowercase\":\"fb98d44ad7501a959f3f4f4a3f004fe2d9e581ea6207e218c4b02c08a4d75adf\",\"sha256_uppercase\":\"fbc87dc219bd7c824ccd0560499d61468ebc371bd723f6f27b999b50de199001\",\"sha1_lowercase\":\"1022b0c3a1d9a6409ae0dd2364fdcfe41f63ae22\",\"sha1_uppercase\":\"63a007a644452db5e97621dfe42904a57ae2b183\"}}"
+          },
+          {
+            "stored": null,
+            "persistedJson": null
+          }
+        ],
+        "reloaded": null
+      }
+    }
+  ]
+}
