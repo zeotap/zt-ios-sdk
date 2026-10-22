@@ -1,9 +1,9 @@
 Pod::Spec.new do |s|
   s.name             = 'ZeotapSDK'
   s.version          = File.read(File.join(__dir__, 'VERSION')).strip
-  s.summary          = 'Zeotap / SignalSmith event collection SDK for iOS.'
+  s.summary          = 'Zeotap SDK for iOS: collects events in iOS apps and streams them to Zeotap.'
   s.description      = <<-DESC
-    The iOS counterpart of the SignalSmith browser SDK: same event model, consent model (opt-in gating,
+    The iOS counterpart of the Zeotap browser SDK: same event model, consent model (opt-in gating,
     IAB TCF v2 via the TCF-for-Apps IABTCF_* defaults, persisted decisions), on-device PII hashing and
     wire format, proven identical by a shared conformance suite — plus a durable offline queue, flush on
     background, device/app context and app-lifecycle events.

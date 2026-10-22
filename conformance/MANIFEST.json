@@ -54,7 +54,7 @@
     },
     "vectors/storage-keys.vectors.json": {
       "family": "storage-keys",
-      "sha256": "75c6c9a9902a82f780b9b255896330a0c0b735e07cd3f317563ef1c3a8aca076",
+      "sha256": "ffafc7c9a5e8c33aeefca81ba29f087b0ff4db0928834a3aacfb510e050972a4",
       "sourceHash": "sha256:0213a13cf3b4caa366f89667c63b31e138fa6402c8063bc0481a613b8ee37c4d",
       "cases": 3
     },

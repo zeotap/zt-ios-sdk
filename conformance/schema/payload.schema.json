@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://signalsmith.dev/sdk/conformance/payload.schema.json",
+  "$id": "https://zeotap.com/sdk/conformance/payload.schema.json",
   "title": "payload conformance vectors",
   "type": "object",
   "properties": {

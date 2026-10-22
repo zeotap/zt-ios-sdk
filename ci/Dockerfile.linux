@@ -1,4 +1,4 @@
-# Linux test host for the SignalSmith iOS SDK (increment 243).
+# Linux test host for the Zeotap iOS SDK (increment 243).
 #
 # XCTest ships only with Xcode, so a Mac with Command Line Tools cannot run
 # `swift test`; this image can (Foundation + XCTest + swift-crypto + system
@@ -6,8 +6,8 @@
 # UIKit/simulator-bound. macOS runners (`.github/workflows/sdk-ios.yml`) cover
 # xcodebuild, the simulator, pod lint and the xcframework.
 #
-#   docker build -t signalsmith-swift-test:local -f sdk/ios/ci/Dockerfile.linux sdk/ios/ci
-#   docker run --rm -v "$PWD/sdk:/work/sdk" -w /work/sdk/ios signalsmith-swift-test:local scripts/test-linux.sh
+#   docker build -t zeotap-ios-sdk-test:local -f sdk/ios/ci/Dockerfile.linux sdk/ios/ci
+#   docker run --rm -v "$PWD/sdk:/work/sdk" -w /work/sdk/ios zeotap-ios-sdk-test:local scripts/test-linux.sh
 # (scripts/test-linux.sh runs one class per process with a stall retry — swift-corelibs-xctest has an
 # intermittent XCTWaiter lost-wakeup on Linux — and uses .build-linux because the host toolchain's
 # .build/checkouts is not writable from the container)

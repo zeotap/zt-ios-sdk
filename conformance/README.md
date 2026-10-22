@@ -8,7 +8,7 @@
 
 # SDK conformance suite
 
-The browser SDK (`sdk/js`) is the **oracle** for every SignalSmith SDK's business logic. The
+The browser SDK (`sdk/js`) is the **oracle** for every Zeotap SDK's business logic. The
 mobile SDKs (`sdk/android`, `sdk/ios`, `sdk/react-native`) are separate native implementations,
 and this directory is what keeps them byte-compatible with the web: a set of **golden vectors
 generated from the real `sdk/js` modules**, executed by every platform's own test suite.

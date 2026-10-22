@@ -27,16 +27,16 @@
       }
     },
     {
-      "id": "signalsmith",
+      "id": "events",
       "input": {
-        "namespace": "signalsmith"
+        "namespace": "events"
       },
       "expected": {
-        "anonymousId": "signalsmith_anonymous_id",
-        "userId": "signalsmith_user_id",
-        "userIdentities": "signalsmith_user_identities",
-        "consent": "signalsmith_consent",
-        "consentTcf": "signalsmith_consent_tcf"
+        "anonymousId": "events_anonymous_id",
+        "userId": "events_user_id",
+        "userIdentities": "events_user_identities",
+        "consent": "events_consent",
+        "consentTcf": "events_consent_tcf"
       }
     },
     {

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://signalsmith.dev/sdk/conformance/consent-persistence.schema.json",
+  "$id": "https://zeotap.com/sdk/conformance/consent-persistence.schema.json",
   "title": "consent-persistence conformance vectors",
   "type": "object",
   "properties": {

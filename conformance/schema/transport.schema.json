@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://signalsmith.dev/sdk/conformance/transport.schema.json",
+  "$id": "https://zeotap.com/sdk/conformance/transport.schema.json",
   "title": "transport conformance vectors",
   "type": "object",
   "properties": {

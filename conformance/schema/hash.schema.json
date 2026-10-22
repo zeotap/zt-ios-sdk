@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://signalsmith.dev/sdk/conformance/hash.schema.json",
+  "$id": "https://zeotap.com/sdk/conformance/hash.schema.json",
   "title": "hash conformance vectors",
   "type": "object",
   "properties": {

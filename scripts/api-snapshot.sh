@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regenerate the committed public-API baseline for ZeotapSDK.
 #
-#   docker run … signalsmith-swift-test:local scripts/api-snapshot.sh
+#   docker run … zeotap-ios-sdk-test:local scripts/api-snapshot.sh
 #   make sdk-ios-api            # the same, wrapped
 #
 # Run this deliberately, as part of a change that adds or removes public API, and

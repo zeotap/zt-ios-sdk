@@ -1,7 +1,7 @@
 // swift-tools-version:5.9
 import PackageDescription
 
-// SignalSmith iOS SDK (increment 243).
+// Zeotap iOS SDK (increment 243).
 //
 // Products:
 //  - ZeotapSDK           the SDK (Foundation, SQLite3, URLSession, CryptoKit, Network; UIKit behind #if canImport)

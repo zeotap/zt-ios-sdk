@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://signalsmith.dev/sdk/conformance/envelope.schema.json",
+  "$id": "https://zeotap.com/sdk/conformance/envelope.schema.json",
   "title": "SDK conformance vector file",
   "type": "object",
   "required": ["family", "version", "sources", "sourceHash", "generatedBy", "cases"],
