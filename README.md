@@ -25,7 +25,7 @@ Full documentation: <https://agentic-docs.zeotap.com/events/ios-sdk>
 
 ```swift
 // Package.swift
-.package(url: "https://github.com/zeotap/zeotap-pulse-ios.git", from: "<version>")
+.package(url: "https://github.com/zeotap/zt-ios-sdk.git", from: "<version>")
 ```
 
 Or in Xcode, use *File › Add Package Dependencies…* with that URL and pick `ZeotapSDK`. Add

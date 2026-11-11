@@ -7,7 +7,7 @@
     "sdk/js/src/consent-state.ts",
     "sdk/js/src/client.test.ts"
   ],
-  "sourceHash": "sha256:592b0d7d71d4cb9d6731052ed1cff55e41de43e430c1154519c2abf62d7fbc25",
+  "sourceHash": "sha256:16678c815fa9caa9bb1edd050479c453d540d83bc4aee5c480366e6437c9c5ff",
   "generatedBy": "sdk/js/scripts/conformance/gating.gen.ts",
   "notes": [
     "gatingActive = consent.require || consent.default === 'denied'. Inactive → every event enqueues immediately with consent merely attached.",

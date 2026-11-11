@@ -6,7 +6,7 @@
     "sdk/js/src/utils.ts",
     "sdk/js/src/client.test.ts"
   ],
-  "sourceHash": "sha256:26fdfb39a50a9c482b499edf90c1b508c1042f04efac13aab5a5c8821dde0541",
+  "sourceHash": "sha256:2f03cfc60e113382a2c38e7494542af496c506d2eb3532c0a3d4797dc6262274",
   "generatedBy": "sdk/js/scripts/conformance/payload.gen.ts",
   "notes": [
     "Runners substitute $LIBRARY_NAME/$LIBRARY_VERSION with their own identity and must add their platform context blocks (app/device/os/network/screen/timezone/...) — compare after removing every context key not present in `expected` except library/consent/identities, and never compare the ignoreContextKeys.",

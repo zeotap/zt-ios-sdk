@@ -8,13 +8,13 @@ Pod::Spec.new do |s|
     wire format, proven identical by a shared conformance suite — plus a durable offline queue, flush on
     background, device/app context and app-lifecycle events.
   DESC
-  s.homepage         = 'https://github.com/zeotap/zeotap-pulse-ios'
+  s.homepage         = 'https://github.com/zeotap/zt-ios-sdk'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Zeotap' => 'engineering@zeotap.com' }
   # The PUBLIC repository generated from this monorepo on release (scripts/sdk-export,
-  # increment 358) — trunk validates the pod by cloning this tag, and SPM consumers
+  # increment 462) — trunk validates the pod by cloning this tag, and SPM consumers
   # resolve the same tag, so both channels install the exact tree the export gated.
-  s.source           = { :git => 'https://github.com/zeotap/zeotap-pulse-ios.git', :tag => "v#{s.version}" }
+  s.source           = { :git => 'https://github.com/zeotap/zt-ios-sdk.git', :tag => "v#{s.version}" }
   s.swift_versions   = ['5.9']
   s.platforms        = { :ios => '14.0' }
   s.default_subspecs = 'Core'
